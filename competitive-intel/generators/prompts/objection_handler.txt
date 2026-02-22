@@ -1,0 +1,31 @@
+Generate objection handlers for the KX vs. {competitor_name} competitive scenario.
+
+These are common objections or challenges that prospects raise when comparing KX (KDB+/KDB-X) against {competitor_name}. For each objection, provide an evidence-based response that a sales engineer can use in a live conversation.
+
+## Source Documents
+
+### KX Sources
+{kx_sources}
+
+### {competitor_name} Sources
+{competitor_sources}
+
+## Common Cross-Cutting Objections to Address
+
+1. **"But {competitor_name} is free/open source"** — Address the TCO argument, hidden costs of DIY, missing enterprise features, engineering time.
+
+2. **"But {competitor_name} uses standard SQL"** — Address the learning curve concern, explain what q/KDB+ provides that SQL cannot, mention PostgreSQL wire protocol support in KDB-X.
+
+3. **"We don't need that level of performance"** — Address why sub-millisecond matters even if they think it doesn't today, growth scenarios, real-time risk requirements.
+
+4. **"{competitor_name} is easier to hire for"** — Address the talent argument, PyKX, training programs, developer experience improvements.
+
+5. **"We're already using {competitor_name} for other workloads"** — Address the consolidation argument, when specialization wins.
+
+For each objection, provide:
+- The exact objection phrasing (as a prospect would say it)
+- A recommended response (consultative, not defensive)
+- Supporting evidence from the sources (with URLs)
+- Appropriate tone guidance (consultative, technical, or executive)
+
+Respond with a JSON array of ObjectionHandler objects.

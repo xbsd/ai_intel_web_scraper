@@ -1,0 +1,35 @@
+Generate a concise positioning narrative for KX (KDB+/KDB-X) against {competitor_name}.
+
+## Source Documents
+
+### KX Sources
+{kx_sources}
+
+### {competitor_name} Sources
+{competitor_sources}
+
+## Per-Topic Competitive Entries (already generated)
+{topic_entries_summary}
+
+## Instructions
+
+Based on the source documents and the per-topic analysis, generate:
+
+1. **60-Second Pitch**: The overall positioning narrative a sales engineer would use when a prospect mentions {competitor_name}. This should be 3-5 sentences that:
+   - Acknowledge what {competitor_name} does well (builds credibility)
+   - Pivot to where KX fundamentally differs
+   - Land on a capital-markets-specific proof point
+   - Create urgency without being aggressive
+
+2. **Quick Reference Comparison Table**: One row per major capability, with:
+   - Capability name
+   - KX assessment (brief)
+   - {competitor_name} assessment (brief)
+   - Verdict: kx_wins / competitor_wins / tie / depends
+
+3. **Deal Stage Talking Points**:
+   - **Discovery**: Questions to ask / points to make during initial discovery calls
+   - **Technical Evaluation**: Points for the technical evaluation phase
+   - **Procurement**: Points for the procurement / final decision phase
+
+Respond with a JSON object matching the PositioningNarrative schema.

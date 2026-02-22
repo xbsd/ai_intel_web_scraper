@@ -1,0 +1,38 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Data directories (large, regeneratable)
+data/raw/*
+data/processed/*
+data/generated/*
+data/reviewed/*
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/generated/.gitkeep
+!data/reviewed/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

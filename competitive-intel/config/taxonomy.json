@@ -1,0 +1,123 @@
+{
+  "version": "1.0",
+  "description": "Competitive intelligence topic taxonomy for capital markets database evaluation",
+  "tiers": {
+    "tier_1": {
+      "name": "Comes Up in Every Deal",
+      "topics": {
+        "performance_query_latency": {
+          "name": "Query Latency & Response Time",
+          "description": "Sub-millisecond matters for pre-trade analytics, real-time risk, algo trading signals"
+        },
+        "performance_ingestion": {
+          "name": "Ingestion Throughput",
+          "description": "Market data feeds generate millions of messages/second; can the DB keep up without back-pressure?"
+        },
+        "time_series_analytics": {
+          "name": "Time-Series Analytics Capabilities",
+          "description": "ASOF joins, temporal joins, OHLCV aggregation, SAMPLE BY, VWAP, tick replay"
+        },
+        "sql_query_language": {
+          "name": "Query Language & SQL Support",
+          "description": "SQL familiarity vs. learning curve; JOIN support; window functions; subqueries; UDFs"
+        },
+        "high_availability": {
+          "name": "High Availability & Disaster Recovery",
+          "description": "Zero-downtime requirement for trading systems; replication; failover; RPO/RTO guarantees"
+        },
+        "streaming_realtime": {
+          "name": "Real-Time Streaming & CEP",
+          "description": "Combine streaming and historical in one query? Event processing? Materialized views?"
+        },
+        "scalability_data_volume": {
+          "name": "Scalability & Data Volume Handling",
+          "description": "Petabyte-scale tick stores; years of history; horizontal vs. vertical scaling"
+        }
+      }
+    },
+    "tier_2": {
+      "name": "Comes Up in Technical Evaluation",
+      "topics": {
+        "security_compliance": {
+          "name": "Security, Authentication & Compliance",
+          "description": "RBAC, encryption at rest/in transit, audit logging, SSO/OIDC for regulated environments"
+        },
+        "architecture_storage": {
+          "name": "Architecture & Storage Engine",
+          "description": "Column-store vs. row-store, WAL, compression, memory management, partitioning strategy"
+        },
+        "concurrency_multiuser": {
+          "name": "Concurrent Users & Workload Isolation",
+          "description": "Can quants, traders, and risk all query simultaneously without degradation?"
+        },
+        "backtesting_historical": {
+          "name": "Backtesting & Historical Analysis",
+          "description": "Replay tick data, point-in-time queries, large range scans across years of data"
+        },
+        "ai_ml_integration": {
+          "name": "AI/ML & Vector Data Integration",
+          "description": "Run models alongside time-series? Vector search? GPU acceleration? Python/PyKX integration?"
+        },
+        "cloud_deployment": {
+          "name": "Cloud & On-Premises Deployment",
+          "description": "Flexibility matters — banks want on-prem or private cloud; hedge funds may want managed cloud"
+        }
+      }
+    },
+    "tier_3": {
+      "name": "Comes Up in Procurement / Final Decision",
+      "topics": {
+        "licensing_pricing": {
+          "name": "Licensing, Pricing & TCO",
+          "description": "Open source vs. enterprise; per-core pricing; hidden costs of free"
+        },
+        "ecosystem_integration": {
+          "name": "Ecosystem & Third-Party Integration",
+          "description": "Connectors (Kafka, Spark, Grafana), language clients, ODBC/JDBC, API surface"
+        },
+        "enterprise_support": {
+          "name": "Enterprise Support & SLAs",
+          "description": "24/7 support? Dedicated SE? SLA guarantees?"
+        },
+        "developer_experience": {
+          "name": "Developer Experience & Hiring",
+          "description": "Learning curve, documentation quality, community size, talent availability"
+        },
+        "operational_complexity": {
+          "name": "Operational Complexity",
+          "description": "Deployment, upgrades, monitoring, backup/restore, tuning overhead"
+        },
+        "vendor_maturity": {
+          "name": "Vendor Maturity & Track Record",
+          "description": "How long in production? Which tier-1 banks use it? STAC benchmarks?"
+        },
+        "benchmark_results": {
+          "name": "Independent Benchmark Results",
+          "description": "TSBS, ClickBench, STAC-M3, third-party comparisons"
+        }
+      }
+    }
+  },
+  "all_topic_ids": [
+    "performance_query_latency",
+    "performance_ingestion",
+    "time_series_analytics",
+    "sql_query_language",
+    "high_availability",
+    "streaming_realtime",
+    "scalability_data_volume",
+    "security_compliance",
+    "architecture_storage",
+    "concurrency_multiuser",
+    "backtesting_historical",
+    "ai_ml_integration",
+    "cloud_deployment",
+    "licensing_pricing",
+    "ecosystem_integration",
+    "enterprise_support",
+    "developer_experience",
+    "operational_complexity",
+    "vendor_maturity",
+    "benchmark_results"
+  ]
+}

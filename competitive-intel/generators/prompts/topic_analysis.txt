@@ -1,0 +1,41 @@
+Analyze the following topic for competitive intelligence between KX (KDB+/KDB-X) and {competitor_name}.
+
+## Topic
+**ID**: {topic_id}
+**Name**: {topic_name}
+**Description**: {topic_description}
+**Why Capital Markets Cares**: {topic_why}
+
+## Source Documents
+
+### KX Sources ({kx_source_count} documents)
+{kx_sources}
+
+### {competitor_name} Sources ({competitor_source_count} documents)
+{competitor_sources}
+
+## Instructions
+
+Based ONLY on the source documents provided above, produce a competitive analysis with the following components:
+
+1. **Competitor Assessment**: What does {competitor_name} actually offer for "{topic_name}"? Be factual and specific. Cite source URLs.
+
+2. **Competitor Limitations**: What are the confirmed, reported, or inferred limitations of {competitor_name} for this topic? Categorize each as:
+   - "confirmed" — stated in their own docs or official sources
+   - "reported" — mentioned by users in community forums (GitHub issues, Reddit, HN)
+   - "inferred" — logically deduced from architecture/feature gaps
+
+3. **KX Differentiators**: Where does KDB+/KDB-X win on this topic? Be specific with evidence.
+
+4. **Objection Handlers**: Generate 2-3 Q&A pairs where a prospect might challenge KX or defend {competitor_name}. Each response should be evidence-based and consultative in tone.
+
+5. **Elevator Pitch**: A 2-3 sentence summary a sales engineer could use in a quick conversation about this topic.
+
+6. **Confidence Level**: Rate your confidence as:
+   - "high" — well-sourced from multiple credible documents
+   - "medium" — some evidence but gaps exist
+   - "low" — insufficient sources, needs manual research
+
+7. **Gaps**: List any sub-topics where you couldn't find sufficient source data.
+
+Respond with a JSON object matching the CompetitiveEntry schema. Every claim must cite its source URL.

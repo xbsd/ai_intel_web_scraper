@@ -1,0 +1,121 @@
+{
+  "name": "KX / KDB+",
+  "short_name": "kx",
+  "is_self": true,
+  "description": "High-performance time-series database for capital markets (our product)",
+
+  "sources": {
+    "docs": [
+      {
+        "id": "kdb-q-reference",
+        "base_url": "https://code.kx.com/q/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 4,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "kdbai-docs",
+        "base_url": "https://code.kx.com/kdbai/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 3,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "kdbx-docs",
+        "base_url": "https://code.kx.com/kdbx/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 3,
+        "rate_limit_seconds": 0.5
+      }
+    ],
+
+    "product_pages": [
+      {
+        "id": "kx-products",
+        "base_url": "https://kx.com/products/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "kx-compare",
+        "base_url": "https://kx.com/compare/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "kx-case-studies",
+        "base_url": "https://kx.com/case-studies/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "kx-resources",
+        "base_url": "https://kx.com/resources/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "rate_limit_seconds": 0.5
+      }
+    ],
+
+    "blog": {
+      "base_url": "https://kx.com/blog/",
+      "scrape_method": "crawl",
+      "content_selector": "article",
+      "max_pages": 100,
+      "rate_limit_seconds": 0.5,
+      "priority_keywords": ["benchmark", "GPU", "KDB-X", "performance", "capital markets", "trading", "risk"]
+    },
+
+    "github": {
+      "repos": [
+        {
+          "repo": "KxSystems/kdb",
+          "scrape_issues": false,
+          "scrape_discussions": false,
+          "scrape_releases": true
+        }
+      ]
+    },
+
+    "community": {
+      "reddit": {
+        "search_terms": ["KDB+", "KX Systems", "kdb ai", "kdb-x"],
+        "subreddits": ["databases", "devops", "algotrading", "quant"],
+        "max_results_per_query": 50
+      },
+      "hackernews": {
+        "search_terms": ["KDB+", "kdb", "KX Systems", "kdb-x"],
+        "max_results_per_query": 50
+      }
+    }
+  },
+
+  "topic_keywords": {
+    "performance_query_latency": [
+      "nanosecond", "microsecond", "vectorized", "SIMD", "in-memory",
+      "memory-mapped", "query speed"
+    ],
+    "time_series_analytics": [
+      "aj", "asof join", "wj", "window join", "xbar", "tick",
+      "tickerplant", "RDB", "HDB", "gateway", "OHLCV"
+    ],
+    "high_availability": [
+      "tick architecture", "log replay", "failover", "redundant tickerplant",
+      "disaster recovery", "HA"
+    ],
+    "ai_ml_integration": [
+      "PyKX", "embedPy", "KDB.AI", "vector", "GPU", "acceleration",
+      "MCP server", "AI", "machine learning"
+    ]
+  }
+}

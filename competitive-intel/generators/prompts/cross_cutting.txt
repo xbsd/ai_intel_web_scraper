@@ -1,0 +1,42 @@
+Generate cross-cutting competitive intelligence content for KX vs. {competitor_name}.
+
+Cross-cutting content addresses themes that span multiple technical topics and come up repeatedly throughout the sales cycle, regardless of which specific capability is being discussed.
+
+## Source Documents
+
+### KX Sources
+{kx_sources}
+
+### {competitor_name} Sources
+{competitor_sources}
+
+## Cross-Cutting Themes to Address
+
+### 1. Open Source vs. Enterprise
+- What does "open source" really mean for {competitor_name}?
+- What features are gated behind their enterprise/paid offering?
+- What are the hidden costs of running OSS in production for capital markets?
+- How does KX's licensing model compare in terms of total value?
+
+### 2. Maturity & Production Readiness
+- How long has {competitor_name} been in production at tier-1 financial institutions?
+- What is KX's track record by comparison?
+- What STAC benchmarks or independent validations exist?
+- How does feature maturity compare (GA vs. beta vs. experimental)?
+
+### 3. Capital Markets Specialization
+- Is {competitor_name} purpose-built for capital markets, or adapted for it?
+- What capital-markets-specific features exist (tick architecture, ASOF joins, etc.)?
+- How do the respective customer bases in financial services compare?
+
+### 4. Technology Trajectory
+- Where is each product heading? (Based on roadmap, recent releases, blog announcements)
+- Are there architectural limitations that will be hard to overcome?
+- How does each vendor's investment in AI/ML integration compare?
+
+For each theme, provide:
+- Analysis with specific evidence from sources
+- How to position KX's advantage
+- Potential counter-arguments and how to handle them
+
+Respond with a JSON array of objection handlers covering these cross-cutting themes.
