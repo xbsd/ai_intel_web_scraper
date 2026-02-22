@@ -1,0 +1,211 @@
+{
+  "name": "QuestDB",
+  "short_name": "questdb",
+  "is_self": false,
+  "description": "Open-source time-series database targeting capital markets and IoT",
+
+  "sources": {
+    "docs": [
+      {
+        "id": "questdb-docs-main",
+        "base_url": "https://questdb.io/docs/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 2,
+        "max_pages": 75,
+        "rate_limit_seconds": 0.3,
+        "exclude_patterns": [
+          "/docs/third-party-tools/",
+          "/docs/clients/"
+        ]
+      },
+      {
+        "id": "questdb-docs-sql",
+        "base_url": "https://questdb.io/docs/reference/sql/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 2,
+        "max_pages": 40,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "questdb-capital-markets",
+        "base_url": "https://questdb.com/enterprise/capital-markets/",
+        "scrape_method": "single_page",
+        "content_selector": "main"
+      },
+      {
+        "id": "questdb-pricing",
+        "base_url": "https://questdb.com/pricing/",
+        "scrape_method": "single_page",
+        "content_selector": "main"
+      }
+    ],
+
+    "blog": {
+      "base_url": "https://questdb.io/blog/",
+      "scrape_method": "crawl",
+      "content_selector": "article",
+      "max_pages": 30,
+      "rate_limit_seconds": 0.3,
+      "priority_keywords": ["benchmark", "performance", "capital markets", "trading", "financial", "release", "enterprise"]
+    },
+
+    "github": {
+      "repos": [
+        {
+          "repo": "questdb/questdb",
+          "scrape_issues": true,
+          "scrape_discussions": true,
+          "scrape_releases": true,
+          "max_issues": 200,
+          "max_discussions": 100,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 20,
+          "labels_of_interest": ["bug", "enhancement", "feature request", "breaking change"]
+        }
+      ]
+    },
+
+    "community": {
+      "reddit": {
+        "search_terms": [
+          "QuestDB",
+          "questdb vs",
+          "questdb problem",
+          "questdb limitation",
+          "questdb performance",
+          "questdb trading",
+          "questdb financial"
+        ],
+        "subreddits": ["databases", "devops", "algotrading", "quant"],
+        "max_results_per_query": 50
+      },
+      "hackernews": {
+        "search_terms": [
+          "QuestDB",
+          "questdb"
+        ],
+        "max_results_per_query": 50
+      }
+    },
+
+    "benchmarks": [
+      {
+        "name": "clickbench",
+        "url": "https://benchmark.clickhouse.com/",
+        "scrape_method": "single_page"
+      },
+      {
+        "name": "tsbs_blog",
+        "url": "https://questdb.io/blog/tags/benchmark/",
+        "scrape_method": "crawl",
+        "max_depth": 2
+      },
+      {
+        "name": "kx_tsbs_benchmark",
+        "url": "https://kx.com/blog/benchmarking-kdb-x-vs-questdb-clickhouse-timescaledb-and-influxdb-with-tsbs/",
+        "scrape_method": "single_page"
+      },
+      {
+        "name": "medium_comparison",
+        "url": "https://medium.com/@smakhnist/picking-the-fastest-database-to-store-time-series-data-411ca3651277",
+        "scrape_method": "single_page"
+      }
+    ]
+  },
+
+  "topic_keywords": {
+    "performance_query_latency": [
+      "latency", "query time", "response time", "millisecond", "microsecond",
+      "sub-millisecond", "query performance", "fast query", "slow query"
+    ],
+    "performance_ingestion": [
+      "ingestion", "throughput", "rows per second", "write speed", "ILP",
+      "line protocol", "insert", "ingest", "back-pressure", "write latency"
+    ],
+    "time_series_analytics": [
+      "SAMPLE BY", "LATEST ON", "ASOF JOIN", "OHLCV", "OHLC", "VWAP",
+      "downsampling", "aggregation", "time bucket", "temporal", "tick",
+      "window function", "materialized view", "time-series", "timeseries"
+    ],
+    "sql_query_language": [
+      "SQL", "JOIN", "subquery", "window function", "GROUP BY",
+      "ORDER BY", "LIMIT", "WHERE", "UNION", "CTE", "common table expression",
+      "user defined function", "UDF", "stored procedure", "PostgreSQL wire"
+    ],
+    "high_availability": [
+      "replication", "HA", "high availability", "failover", "disaster recovery",
+      "standby", "redundancy", "RPO", "RTO", "WAL replication", "backup",
+      "data loss", "durability", "snapshot"
+    ],
+    "streaming_realtime": [
+      "streaming", "real-time", "realtime", "event processing", "CEP",
+      "materialized view", "continuous query", "live", "pub/sub"
+    ],
+    "scalability_data_volume": [
+      "scale", "scalability", "horizontal", "vertical", "cluster",
+      "distributed", "partition", "shard", "petabyte", "terabyte",
+      "billion rows", "data volume", "large dataset"
+    ],
+    "security_compliance": [
+      "authentication", "authorization", "RBAC", "encryption", "TLS", "SSL",
+      "audit", "compliance", "OIDC", "SSO", "IAM", "role", "permission",
+      "MiFID", "Dodd-Frank", "SOC", "FIPS"
+    ],
+    "architecture_storage": [
+      "architecture", "storage engine", "column", "columnar", "WAL",
+      "write-ahead log", "compression", "memory", "in-memory", "on-disk",
+      "partitioning", "indexing", "cache"
+    ],
+    "concurrency_multiuser": [
+      "concurrent", "multi-user", "parallel", "thread", "connection pool",
+      "workload isolation", "resource limit", "contention"
+    ],
+    "backtesting_historical": [
+      "backtest", "backtesting", "historical", "replay", "point-in-time",
+      "range scan", "date range", "multi-year"
+    ],
+    "ai_ml_integration": [
+      "AI", "ML", "machine learning", "vector", "embedding", "GPU",
+      "PyKX", "Python", "model", "neural", "deep learning", "LLM"
+    ],
+    "cloud_deployment": [
+      "cloud", "AWS", "Azure", "GCP", "Kubernetes", "Docker",
+      "on-premises", "on-prem", "hybrid", "managed service", "SaaS"
+    ],
+    "licensing_pricing": [
+      "license", "pricing", "cost", "free", "open source", "enterprise",
+      "commercial", "per-core", "subscription", "TCO", "total cost"
+    ],
+    "ecosystem_integration": [
+      "connector", "Kafka", "Spark", "Grafana", "ODBC", "JDBC",
+      "Parquet", "Iceberg", "API", "REST", "client library", "SDK",
+      "integration", "plugin", "module"
+    ],
+    "enterprise_support": [
+      "support", "SLA", "24/7", "enterprise", "professional services",
+      "dedicated", "response time", "production support"
+    ],
+    "developer_experience": [
+      "documentation", "tutorial", "getting started", "learning curve",
+      "developer experience", "DX", "community", "Stack Overflow",
+      "hiring", "talent"
+    ],
+    "operational_complexity": [
+      "deployment", "upgrade", "migration", "monitoring", "observability",
+      "backup", "restore", "tuning", "configuration", "maintenance",
+      "DevOps", "operational"
+    ],
+    "vendor_maturity": [
+      "production", "bank", "financial institution", "hedge fund",
+      "track record", "years", "proven", "battle-tested", "STAC",
+      "world record", "client", "case study"
+    ],
+    "benchmark_results": [
+      "benchmark", "TSBS", "ClickBench", "STAC", "TPC",
+      "performance test", "comparison test", "speed test"
+    ]
+  }
+}

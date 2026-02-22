@@ -1,0 +1,105 @@
+{
+  "name": "ClickHouse",
+  "short_name": "clickhouse",
+  "is_self": false,
+  "description": "Open-source columnar OLAP database, increasingly used for time-series workloads",
+
+  "sources": {
+    "docs": [
+      {
+        "id": "clickhouse-docs-main",
+        "base_url": "https://clickhouse.com/docs/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 4,
+        "rate_limit_seconds": 0.5
+      }
+    ],
+
+    "blog": {
+      "base_url": "https://clickhouse.com/blog/",
+      "scrape_method": "crawl",
+      "content_selector": "article",
+      "max_pages": 50,
+      "rate_limit_seconds": 0.5,
+      "priority_keywords": ["benchmark", "performance", "time-series", "financial", "release", "enterprise"]
+    },
+
+    "github": {
+      "repos": [
+        {
+          "repo": "ClickHouse/ClickHouse",
+          "scrape_issues": true,
+          "scrape_discussions": true,
+          "scrape_releases": true,
+          "max_issues": 1000,
+          "max_discussions": 500,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 100,
+          "labels_of_interest": ["bug", "enhancement", "feature request"]
+        }
+      ]
+    },
+
+    "community": {
+      "reddit": {
+        "search_terms": [
+          "ClickHouse",
+          "clickhouse vs",
+          "clickhouse problem",
+          "clickhouse limitation",
+          "clickhouse time series"
+        ],
+        "subreddits": ["databases", "devops", "dataengineering"],
+        "max_results_per_query": 50
+      },
+      "hackernews": {
+        "search_terms": [
+          "ClickHouse",
+          "clickhouse"
+        ],
+        "max_results_per_query": 50
+      }
+    },
+
+    "benchmarks": [
+      {
+        "name": "clickbench",
+        "url": "https://benchmark.clickhouse.com/",
+        "scrape_method": "single_page"
+      }
+    ]
+  },
+
+  "topic_keywords": {
+    "performance_query_latency": [
+      "latency", "query time", "response time", "millisecond",
+      "query performance", "fast query", "vectorized execution"
+    ],
+    "performance_ingestion": [
+      "ingestion", "throughput", "rows per second", "write speed",
+      "insert", "ingest", "MergeTree"
+    ],
+    "time_series_analytics": [
+      "time-series", "timeseries", "aggregation", "downsampling",
+      "window function", "materialized view"
+    ],
+    "sql_query_language": [
+      "SQL", "JOIN", "subquery", "window function", "ClickHouse SQL",
+      "dialect", "UDF", "user defined function"
+    ],
+    "high_availability": [
+      "replication", "ReplicatedMergeTree", "HA", "high availability",
+      "failover", "ZooKeeper", "Keeper", "disaster recovery"
+    ],
+    "scalability_data_volume": [
+      "scale", "distributed", "cluster", "shard", "partition",
+      "petabyte", "terabyte", "horizontal scaling"
+    ],
+    "architecture_storage": [
+      "MergeTree", "columnar", "compression", "sparse index",
+      "primary key", "partitioning", "storage engine"
+    ]
+  }
+}

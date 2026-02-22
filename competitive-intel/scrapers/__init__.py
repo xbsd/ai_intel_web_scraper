@@ -1,0 +1,5 @@
+from scrapers.docs_scraper import DocsScraper
+from scrapers.github_scraper import GitHubScraper
+from scrapers.blog_scraper import BlogScraper
+from scrapers.community_scraper import CommunityScraper
+from scrapers.benchmark_scraper import BenchmarkScraper

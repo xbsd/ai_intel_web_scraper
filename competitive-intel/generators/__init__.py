@@ -1,0 +1,3 @@
+from generators.comparison_generator import ComparisonGenerator
+from generators.objection_generator import ObjectionGenerator
+from generators.summary_generator import SummaryGenerator

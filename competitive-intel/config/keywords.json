@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "description": "Global keyword-to-topic mapping used for auto-tagging scraped content",
+  "topic_keywords": {
+    "performance_query_latency": [
+      "latency", "query time", "response time", "millisecond", "microsecond",
+      "sub-millisecond", "query performance", "fast query", "slow query",
+      "nanosecond", "vectorized", "SIMD", "query speed", "execution time"
+    ],
+    "performance_ingestion": [
+      "ingestion", "throughput", "rows per second", "write speed", "ILP",
+      "line protocol", "insert", "ingest", "back-pressure", "write latency",
+      "write throughput", "messages per second", "events per second"
+    ],
+    "time_series_analytics": [
+      "SAMPLE BY", "LATEST ON", "ASOF JOIN", "OHLCV", "OHLC", "VWAP",
+      "downsampling", "aggregation", "time bucket", "temporal", "tick",
+      "window function", "materialized view", "time-series", "timeseries",
+      "aj", "asof join", "wj", "window join", "xbar", "tickerplant",
+      "RDB", "HDB", "gateway"
+    ],
+    "sql_query_language": [
+      "SQL", "JOIN", "subquery", "window function", "GROUP BY",
+      "ORDER BY", "LIMIT", "WHERE", "UNION", "CTE", "common table expression",
+      "user defined function", "UDF", "stored procedure", "PostgreSQL wire",
+      "query language", "SQL dialect", "SQL compatibility"
+    ],
+    "high_availability": [
+      "replication", "HA", "high availability", "failover", "disaster recovery",
+      "standby", "redundancy", "RPO", "RTO", "WAL replication", "backup",
+      "data loss", "durability", "snapshot", "tick architecture", "log replay",
+      "redundant tickerplant"
+    ],
+    "streaming_realtime": [
+      "streaming", "real-time", "realtime", "event processing", "CEP",
+      "materialized view", "continuous query", "live", "pub/sub",
+      "stream processing", "event-driven"
+    ],
+    "scalability_data_volume": [
+      "scale", "scalability", "horizontal", "vertical", "cluster",
+      "distributed", "partition", "shard", "petabyte", "terabyte",
+      "billion rows", "data volume", "large dataset", "horizontal scaling"
+    ],
+    "security_compliance": [
+      "authentication", "authorization", "RBAC", "encryption", "TLS", "SSL",
+      "audit", "compliance", "OIDC", "SSO", "IAM", "role", "permission",
+      "MiFID", "Dodd-Frank", "SOC", "FIPS", "at rest", "in transit"
+    ],
+    "architecture_storage": [
+      "architecture", "storage engine", "column", "columnar", "WAL",
+      "write-ahead log", "compression", "memory", "in-memory", "on-disk",
+      "partitioning", "indexing", "cache", "memory-mapped", "column store"
+    ],
+    "concurrency_multiuser": [
+      "concurrent", "multi-user", "parallel", "thread", "connection pool",
+      "workload isolation", "resource limit", "contention", "parallel query"
+    ],
+    "backtesting_historical": [
+      "backtest", "backtesting", "historical", "replay", "point-in-time",
+      "range scan", "date range", "multi-year", "historical analysis"
+    ],
+    "ai_ml_integration": [
+      "AI", "ML", "machine learning", "vector", "embedding", "GPU",
+      "PyKX", "Python", "model", "neural", "deep learning", "LLM",
+      "KDB.AI", "embedPy", "MCP server", "vector search"
+    ],
+    "cloud_deployment": [
+      "cloud", "AWS", "Azure", "GCP", "Kubernetes", "Docker",
+      "on-premises", "on-prem", "hybrid", "managed service", "SaaS",
+      "container", "deployment"
+    ],
+    "licensing_pricing": [
+      "license", "pricing", "cost", "free", "open source", "enterprise",
+      "commercial", "per-core", "subscription", "TCO", "total cost",
+      "pricing model", "free tier"
+    ],
+    "ecosystem_integration": [
+      "connector", "Kafka", "Spark", "Grafana", "ODBC", "JDBC",
+      "Parquet", "Iceberg", "API", "REST", "client library", "SDK",
+      "integration", "plugin", "module"
+    ],
+    "enterprise_support": [
+      "support", "SLA", "24/7", "enterprise", "professional services",
+      "dedicated", "response time", "production support"
+    ],
+    "developer_experience": [
+      "documentation", "tutorial", "getting started", "learning curve",
+      "developer experience", "DX", "community", "Stack Overflow",
+      "hiring", "talent", "onboarding"
+    ],
+    "operational_complexity": [
+      "deployment", "upgrade", "migration", "monitoring", "observability",
+      "backup", "restore", "tuning", "configuration", "maintenance",
+      "DevOps", "operational", "ops"
+    ],
+    "vendor_maturity": [
+      "production", "bank", "financial institution", "hedge fund",
+      "track record", "years", "proven", "battle-tested", "STAC",
+      "world record", "client", "case study"
+    ],
+    "benchmark_results": [
+      "benchmark", "TSBS", "ClickBench", "STAC", "TPC",
+      "performance test", "comparison test", "speed test"
+    ]
+  }
+}
