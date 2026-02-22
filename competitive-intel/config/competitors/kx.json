@@ -3,7 +3,6 @@
   "short_name": "kx",
   "is_self": true,
   "description": "High-performance time-series database for capital markets (our product)",
-
   "sources": {
     "docs": [
       {
@@ -11,8 +10,9 @@
         "base_url": "https://code.kx.com/q/",
         "scrape_method": "crawl",
         "content_selector": "article",
-        "max_depth": 4,
-        "rate_limit_seconds": 0.5
+        "max_depth": 3,
+        "max_pages": 150,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "kdbai-docs",
@@ -20,7 +20,8 @@
         "scrape_method": "crawl",
         "content_selector": "article",
         "max_depth": 3,
-        "rate_limit_seconds": 0.5
+        "max_pages": 75,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "kdbx-docs",
@@ -28,10 +29,64 @@
         "scrape_method": "crawl",
         "content_selector": "article",
         "max_depth": 3,
-        "rate_limit_seconds": 0.5
+        "max_pages": 50,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "pykx-docs",
+        "base_url": "https://code.kx.com/pykx/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 3,
+        "max_pages": 75,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "kx-platform-docs",
+        "base_url": "https://code.kx.com/platform/",
+        "scrape_method": "crawl",
+        "content_selector": "article",
+        "max_depth": 3,
+        "max_pages": 50,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "insights-enterprise-docs",
+        "base_url": "https://docs.kx.com/insights-enterprise-latest/insights/enterprise/home.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 3,
+        "max_pages": 75,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "dashboards-docs",
+        "base_url": "https://docs.kx.com/dashboards-direct-latest/dashboards/home.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 3,
+        "max_pages": 50,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "accelerators-docs",
+        "base_url": "https://docs.kx.com/accel/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "max_pages": 30,
+        "rate_limit_seconds": 0.3
+      },
+      {
+        "id": "feedhandlers-docs",
+        "base_url": "https://docs.kx.com/fh/",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "max_pages": 30,
+        "rate_limit_seconds": 0.3
       }
     ],
-
     "product_pages": [
       {
         "id": "kx-products",
@@ -39,7 +94,8 @@
         "scrape_method": "crawl",
         "content_selector": "main",
         "max_depth": 2,
-        "rate_limit_seconds": 0.5
+        "max_pages": 50,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "kx-compare",
@@ -47,7 +103,8 @@
         "scrape_method": "crawl",
         "content_selector": "main",
         "max_depth": 2,
-        "rate_limit_seconds": 0.5
+        "max_pages": 30,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "kx-case-studies",
@@ -55,7 +112,8 @@
         "scrape_method": "crawl",
         "content_selector": "main",
         "max_depth": 2,
-        "rate_limit_seconds": 0.5
+        "max_pages": 30,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "kx-resources",
@@ -63,59 +121,219 @@
         "scrape_method": "crawl",
         "content_selector": "main",
         "max_depth": 2,
-        "rate_limit_seconds": 0.5
+        "max_pages": 50,
+        "rate_limit_seconds": 0.3
       }
     ],
-
     "blog": {
       "base_url": "https://kx.com/blog/",
       "scrape_method": "crawl",
-      "content_selector": "article",
-      "max_pages": 100,
-      "rate_limit_seconds": 0.5,
-      "priority_keywords": ["benchmark", "GPU", "KDB-X", "performance", "capital markets", "trading", "risk"]
+      "content_selector": ".entry-content",
+      "max_pages": 150,
+      "rate_limit_seconds": 0.3,
+      "priority_keywords": [
+        "benchmark",
+        "GPU",
+        "KDB-X",
+        "performance",
+        "capital markets",
+        "trading",
+        "risk",
+        "PyKX",
+        "KDB.AI",
+        "vector",
+        "real-time",
+        "streaming"
+      ]
     },
-
     "github": {
       "repos": [
         {
           "repo": "KxSystems/kdb",
-          "scrape_issues": false,
+          "scrape_issues": true,
           "scrape_discussions": false,
-          "scrape_releases": true
+          "scrape_releases": true,
+          "max_issues": 50,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 10,
+          "labels_of_interest": [
+            "bug",
+            "enhancement",
+            "feature request"
+          ]
+        },
+        {
+          "repo": "KxSystems/pykx",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 50,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 10,
+          "labels_of_interest": [
+            "bug",
+            "enhancement",
+            "feature request"
+          ]
+        },
+        {
+          "repo": "KxSystems/pyq",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 100,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 20,
+          "labels_of_interest": [
+            "bug",
+            "enhancement"
+          ]
+        },
+        {
+          "repo": "KxSystems/embedPy",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 50,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 10,
+          "labels_of_interest": [
+            "bug",
+            "enhancement"
+          ]
+        },
+        {
+          "repo": "KxSystems/kx-vscode",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 25,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": [
+            "bug",
+            "enhancement"
+          ]
+        },
+        {
+          "repo": "KxSystems/docs",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 25,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": [
+            "bug"
+          ]
+        },
+        {
+          "repo": "KxSystems/ml",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 10,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": [
+            "bug",
+            "enhancement"
+          ]
+        },
+        {
+          "repo": "KxSystems/kdbai-samples",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": false,
+          "max_issues": 15,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": [
+            "bug"
+          ]
         }
       ]
     },
-
     "community": {
       "reddit": {
-        "search_terms": ["KDB+", "KX Systems", "kdb ai", "kdb-x"],
-        "subreddits": ["databases", "devops", "algotrading", "quant"],
+        "search_terms": [
+          "KDB+",
+          "KX Systems",
+          "kdb ai",
+          "kdb-x",
+          "PyKX"
+        ],
+        "subreddits": [
+          "databases",
+          "devops",
+          "algotrading",
+          "quant",
+          "fintech"
+        ],
         "max_results_per_query": 50
       },
       "hackernews": {
-        "search_terms": ["KDB+", "kdb", "KX Systems", "kdb-x"],
+        "search_terms": [
+          "KDB+",
+          "kdb",
+          "KX Systems",
+          "kdb-x",
+          "PyKX",
+          "kdb.ai"
+        ],
         "max_results_per_query": 50
       }
     }
   },
-
   "topic_keywords": {
     "performance_query_latency": [
-      "nanosecond", "microsecond", "vectorized", "SIMD", "in-memory",
-      "memory-mapped", "query speed"
+      "nanosecond",
+      "microsecond",
+      "vectorized",
+      "SIMD",
+      "in-memory",
+      "memory-mapped",
+      "query speed"
     ],
     "time_series_analytics": [
-      "aj", "asof join", "wj", "window join", "xbar", "tick",
-      "tickerplant", "RDB", "HDB", "gateway", "OHLCV"
+      "aj",
+      "asof join",
+      "wj",
+      "window join",
+      "xbar",
+      "tick",
+      "tickerplant",
+      "RDB",
+      "HDB",
+      "gateway",
+      "OHLCV"
     ],
     "high_availability": [
-      "tick architecture", "log replay", "failover", "redundant tickerplant",
-      "disaster recovery", "HA"
+      "tick architecture",
+      "log replay",
+      "failover",
+      "redundant tickerplant",
+      "disaster recovery",
+      "HA"
     ],
     "ai_ml_integration": [
-      "PyKX", "embedPy", "KDB.AI", "vector", "GPU", "acceleration",
-      "MCP server", "AI", "machine learning"
+      "PyKX",
+      "embedPy",
+      "KDB.AI",
+      "vector",
+      "GPU",
+      "acceleration",
+      "MCP server",
+      "AI",
+      "machine learning"
     ]
   }
 }
