@@ -11,8 +11,9 @@
         "base_url": "https://questdb.io/docs/",
         "scrape_method": "crawl",
         "content_selector": "article",
-        "max_depth": 4,
-        "rate_limit_seconds": 0.5,
+        "max_depth": 2,
+        "max_pages": 75,
+        "rate_limit_seconds": 0.3,
         "exclude_patterns": [
           "/docs/third-party-tools/",
           "/docs/clients/"
@@ -23,8 +24,9 @@
         "base_url": "https://questdb.io/docs/reference/sql/",
         "scrape_method": "crawl",
         "content_selector": "article",
-        "max_depth": 3,
-        "rate_limit_seconds": 0.5
+        "max_depth": 2,
+        "max_pages": 40,
+        "rate_limit_seconds": 0.3
       },
       {
         "id": "questdb-capital-markets",
@@ -44,8 +46,8 @@
       "base_url": "https://questdb.io/blog/",
       "scrape_method": "crawl",
       "content_selector": "article",
-      "max_pages": 50,
-      "rate_limit_seconds": 0.5,
+      "max_pages": 30,
+      "rate_limit_seconds": 0.3,
       "priority_keywords": ["benchmark", "performance", "capital markets", "trading", "financial", "release", "enterprise"]
     },
 
@@ -56,11 +58,11 @@
           "scrape_issues": true,
           "scrape_discussions": true,
           "scrape_releases": true,
-          "max_issues": 1000,
-          "max_discussions": 500,
+          "max_issues": 200,
+          "max_discussions": 100,
           "issue_sort": "comments",
           "issue_direction": "desc",
-          "fetch_comments_for_top_n": 100,
+          "fetch_comments_for_top_n": 20,
           "labels_of_interest": ["bug", "enhancement", "feature request", "breaking change"]
         }
       ]

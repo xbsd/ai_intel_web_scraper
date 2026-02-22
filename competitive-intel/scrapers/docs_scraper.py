@@ -53,6 +53,7 @@ class DocsScraper:
         method = config.get("scrape_method", "crawl")
         content_selector = config.get("content_selector", "article")
         max_depth = config.get("max_depth", 3)
+        max_pages = config.get("max_pages", 200)
         rate_limit = config.get("rate_limit_seconds", 0.5)
         exclude_patterns = config.get("exclude_patterns", [])
 
@@ -62,7 +63,8 @@ class DocsScraper:
             records = self._scrape_single(base_url, content_selector, rate_limiter)
         else:
             records = self._crawl(
-                base_url, content_selector, max_depth, rate_limiter, exclude_patterns
+                base_url, content_selector, max_depth, rate_limiter, exclude_patterns,
+                max_pages=max_pages,
             )
 
         if records:
@@ -109,6 +111,7 @@ class DocsScraper:
         max_depth: int,
         rate_limiter: RateLimiter,
         exclude_patterns: list[str],
+        max_pages: int = 200,
     ) -> list[SourceRecord]:
         """Crawl a documentation site following internal links."""
         visited: set[str] = set()
@@ -120,7 +123,7 @@ class DocsScraper:
         queue.append((start_url, 0))
         visited.add(start_url)
 
-        while queue:
+        while queue and len(records) < max_pages:
             url, depth = queue.popleft()
 
             if self._should_exclude(url, exclude_patterns):

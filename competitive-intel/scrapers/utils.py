@@ -40,18 +40,35 @@ class RateLimiter:
         self._last_request_time = time.time()
 
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type((requests.ConnectionError, requests.Timeout)),
-)
 def fetch_url(
     url: str,
     headers: Optional[dict] = None,
     timeout: int = 30,
     rate_limiter: Optional[RateLimiter] = None,
 ) -> Optional[requests.Response]:
-    """Fetch a URL with retry logic and rate limiting."""
+    """Fetch a URL with retry logic and rate limiting.
+
+    Returns None on any unrecoverable error (including exhausted retries).
+    """
+    try:
+        return _fetch_url_with_retry(url, headers=headers, timeout=timeout, rate_limiter=rate_limiter)
+    except Exception as e:
+        logger.error("All retries exhausted for %s: %s", url, e)
+        return None
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((requests.ConnectionError, requests.Timeout)),
+)
+def _fetch_url_with_retry(
+    url: str,
+    headers: Optional[dict] = None,
+    timeout: int = 30,
+    rate_limiter: Optional[RateLimiter] = None,
+) -> Optional[requests.Response]:
+    """Inner fetch with retry decorator."""
     if rate_limiter:
         rate_limiter.wait()
 

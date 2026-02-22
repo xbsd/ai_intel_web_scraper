@@ -104,7 +104,8 @@ class BenchmarkScraper:
         )
 
     def _scrape_crawl(
-        self, base_url: str, name: str, max_depth: int, rate_limiter: RateLimiter
+        self, base_url: str, name: str, max_depth: int, rate_limiter: RateLimiter,
+        max_pages: int = 50,
     ) -> list[SourceRecord]:
         """Crawl a benchmark site for related pages."""
         from collections import deque
@@ -117,7 +118,7 @@ class BenchmarkScraper:
         queue.append((start, 0))
         visited.add(start)
 
-        while queue:
+        while queue and len(records) < max_pages:
             url, depth = queue.popleft()
 
             response = fetch_url(url, rate_limiter=rate_limiter)

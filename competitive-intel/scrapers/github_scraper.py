@@ -296,8 +296,8 @@ class GitHubScraper:
                 discussion_url = d.get("url", "")
                 metadata = GitHubDiscussionMetadata(
                     discussion_number=d["number"],
-                    category=d.get("category", {}).get("name", ""),
-                    is_answered=d.get("isAnswered", False),
+                    category=d.get("category", {}).get("name", "") if d.get("category") else "",
+                    is_answered=bool(d.get("isAnswered")),
                     answer_body=answer_body,
                     comments_count=d.get("comments", {}).get("totalCount", 0),
                     created_at=d.get("createdAt", ""),
