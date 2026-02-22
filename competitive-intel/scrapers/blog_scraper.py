@@ -51,10 +51,15 @@ class BlogScraper:
         rate_limit = blog_config.get("rate_limit_seconds", 0.5)
         priority_keywords = blog_config.get("priority_keywords", [])
 
+        pagination_pattern = blog_config.get("pagination_pattern", "")
+
         rate_limiter = RateLimiter(min_delay=rate_limit)
 
         # Discover blog post URLs by crawling the blog index
-        post_urls = self._discover_posts(base_url, max_pages, rate_limiter)
+        post_urls = self._discover_posts(
+            base_url, max_pages, rate_limiter,
+            pagination_pattern=pagination_pattern,
+        )
         logger.info("Discovered %d blog post URLs from %s", len(post_urls), base_url)
 
         # Scrape each post
@@ -77,9 +82,15 @@ class BlogScraper:
         return records
 
     def _discover_posts(
-        self, base_url: str, max_pages: int, rate_limiter: RateLimiter
+        self, base_url: str, max_pages: int, rate_limiter: RateLimiter,
+        pagination_pattern: str = "",
     ) -> list[str]:
-        """Discover blog post URLs from index/listing pages."""
+        """Discover blog post URLs from index/listing pages.
+
+        Supports both path-based (/page/2/) and query-param (?paged=2) pagination.
+        If pagination_pattern is provided (e.g. "?paged={page}"), listing pages are
+        generated directly rather than relying solely on link discovery.
+        """
         visited = set()
         post_urls = []
         queue: deque[str] = deque()
@@ -87,6 +98,21 @@ class BlogScraper:
         start_url = normalize_url(base_url)
         queue.append(start_url)
         visited.add(start_url)
+
+        # If a pagination pattern is given, pre-seed the queue with listing pages
+        if pagination_pattern:
+            for page_num in range(2, 100):  # probe up to 100 pages
+                listing_url = base_url.rstrip("/") + pagination_pattern.format(page=page_num)
+                queue.append(listing_url)
+        else:
+            # Auto-detect: probe ?paged=2 to see if the blog uses query-param pagination
+            probe_url = base_url.rstrip("/") + "?paged=2"
+            probe_resp = fetch_url(probe_url, rate_limiter=rate_limiter)
+            if probe_resp and probe_resp.status_code == 200:
+                logger.info("Detected ?paged= pagination for %s", base_url)
+                for page_num in range(2, 100):
+                    listing_url = base_url.rstrip("/") + f"?paged={page_num}"
+                    queue.append(listing_url)
 
         pages_checked = 0
 

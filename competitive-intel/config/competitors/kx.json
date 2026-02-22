@@ -25,11 +25,11 @@
       },
       {
         "id": "kdbx-docs",
-        "base_url": "https://code.kx.com/kdbx/",
+        "base_url": "https://code.kx.com/kdb-x/",
         "scrape_method": "crawl",
         "content_selector": "article",
         "max_depth": 3,
-        "max_pages": 50,
+        "max_pages": 100,
         "rate_limit_seconds": 0.3
       },
       {
@@ -129,7 +129,8 @@
       "base_url": "https://kx.com/blog/",
       "scrape_method": "crawl",
       "content_selector": ".entry-content",
-      "max_pages": 150,
+      "max_pages": 220,
+      "pagination_pattern": "?paged={page}",
       "rate_limit_seconds": 0.3,
       "priority_keywords": [
         "benchmark",
@@ -157,26 +158,19 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 10,
-          "labels_of_interest": [
-            "bug",
-            "enhancement",
-            "feature request"
-          ]
+          "labels_of_interest": ["bug", "enhancement", "feature request"]
         },
         {
           "repo": "KxSystems/pykx",
           "scrape_issues": true,
-          "scrape_discussions": false,
+          "scrape_discussions": true,
           "scrape_releases": true,
           "max_issues": 50,
+          "max_discussions": 25,
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 10,
-          "labels_of_interest": [
-            "bug",
-            "enhancement",
-            "feature request"
-          ]
+          "labels_of_interest": ["bug", "enhancement", "feature request"]
         },
         {
           "repo": "KxSystems/pyq",
@@ -187,10 +181,7 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 20,
-          "labels_of_interest": [
-            "bug",
-            "enhancement"
-          ]
+          "labels_of_interest": ["bug", "enhancement"]
         },
         {
           "repo": "KxSystems/embedPy",
@@ -201,10 +192,7 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 10,
-          "labels_of_interest": [
-            "bug",
-            "enhancement"
-          ]
+          "labels_of_interest": ["bug", "enhancement"]
         },
         {
           "repo": "KxSystems/kx-vscode",
@@ -215,10 +203,7 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 5,
-          "labels_of_interest": [
-            "bug",
-            "enhancement"
-          ]
+          "labels_of_interest": ["bug", "enhancement"]
         },
         {
           "repo": "KxSystems/docs",
@@ -229,9 +214,7 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 5,
-          "labels_of_interest": [
-            "bug"
-          ]
+          "labels_of_interest": ["bug"]
         },
         {
           "repo": "KxSystems/ml",
@@ -242,10 +225,7 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 5,
-          "labels_of_interest": [
-            "bug",
-            "enhancement"
-          ]
+          "labels_of_interest": ["bug", "enhancement"]
         },
         {
           "repo": "KxSystems/kdbai-samples",
@@ -256,84 +236,71 @@
           "issue_sort": "comments",
           "issue_direction": "desc",
           "fetch_comments_for_top_n": 5,
-          "labels_of_interest": [
-            "bug"
-          ]
+          "labels_of_interest": ["bug"]
+        },
+        {
+          "repo": "KxSystems/kafka",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 25,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": ["bug", "enhancement"]
+        },
+        {
+          "repo": "KxSystems/jupyterq",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 25,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": ["bug", "enhancement"]
+        },
+        {
+          "repo": "KxSystems/arrowkdb",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 15,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": ["bug", "enhancement"]
         }
       ]
     },
     "community": {
       "reddit": {
-        "search_terms": [
-          "KDB+",
-          "KX Systems",
-          "kdb ai",
-          "kdb-x",
-          "PyKX"
-        ],
-        "subreddits": [
-          "databases",
-          "devops",
-          "algotrading",
-          "quant",
-          "fintech"
-        ],
+        "search_terms": ["KDB+", "KX Systems", "kdb ai", "kdb-x", "PyKX"],
+        "subreddits": ["databases", "devops", "algotrading", "quant", "fintech"],
         "max_results_per_query": 50
       },
       "hackernews": {
-        "search_terms": [
-          "KDB+",
-          "kdb",
-          "KX Systems",
-          "kdb-x",
-          "PyKX",
-          "kdb.ai"
-        ],
+        "search_terms": ["KDB+", "kdb", "KX Systems", "kdb-x", "PyKX", "kdb.ai"],
         "max_results_per_query": 50
       }
     }
   },
   "topic_keywords": {
     "performance_query_latency": [
-      "nanosecond",
-      "microsecond",
-      "vectorized",
-      "SIMD",
-      "in-memory",
-      "memory-mapped",
-      "query speed"
+      "nanosecond", "microsecond", "vectorized", "SIMD", "in-memory",
+      "memory-mapped", "query speed"
     ],
     "time_series_analytics": [
-      "aj",
-      "asof join",
-      "wj",
-      "window join",
-      "xbar",
-      "tick",
-      "tickerplant",
-      "RDB",
-      "HDB",
-      "gateway",
-      "OHLCV"
+      "aj", "asof join", "wj", "window join", "xbar", "tick",
+      "tickerplant", "RDB", "HDB", "gateway", "OHLCV"
     ],
     "high_availability": [
-      "tick architecture",
-      "log replay",
-      "failover",
-      "redundant tickerplant",
-      "disaster recovery",
-      "HA"
+      "tick architecture", "log replay", "failover", "redundant tickerplant",
+      "disaster recovery", "HA"
     ],
     "ai_ml_integration": [
-      "PyKX",
-      "embedPy",
-      "KDB.AI",
-      "vector",
-      "GPU",
-      "acceleration",
-      "MCP server",
-      "AI",
-      "machine learning"
+      "PyKX", "embedPy", "KDB.AI", "vector", "GPU", "acceleration",
+      "MCP server", "AI", "machine learning"
     ]
   }
 }
