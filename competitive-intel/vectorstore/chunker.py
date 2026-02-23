@@ -218,9 +218,18 @@ class Chunker:
     def chunk_records(self, records: list[SourceRecord]) -> list[RawChunk]:
         """Chunk a batch of SourceRecords."""
         all_chunks = []
-        for record in records:
+        total = len(records)
+        log_interval = max(1, total // 10)  # Log every ~10%
+
+        for i, record in enumerate(records):
             chunks = self.chunk_record(record)
             all_chunks.extend(chunks)
+
+            if (i + 1) % log_interval == 0 or (i + 1) == total:
+                logger.info(
+                    "Chunking progress: %d/%d records (%.0f%%), %d chunks so far",
+                    i + 1, total, (i + 1) / total * 100, len(all_chunks),
+                )
 
         logger.info(
             "Chunked %d records into %d chunks (avg %.1f chunks/record)",

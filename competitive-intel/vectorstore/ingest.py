@@ -140,8 +140,10 @@ def ingest_all(
     store = VectorStore()
 
     if reset:
-        logger.info("Resetting vector store (wiping all collections)...")
+        logger.warning("Resetting vector store (wiping all collections). Use without --reset to add incrementally.")
         store.reset()
+    else:
+        logger.info("Running in incremental mode (existing vectors preserved). Use --reset to wipe first.")
 
     all_stats: dict[str, dict] = {}
 

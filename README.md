@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 # 2. Set up environment variables
 cp .env.example .env
-# Edit .env with your API keys (GITHUB_TOKEN, ANTHROPIC_API_KEY)
+# Edit .env with your API keys (GITHUB_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY)
 
 # 3. Scrape data
 python pipeline.py scrape --target kx
@@ -93,3 +93,4 @@ competitive-intel/
 |----------|----------|---------|
 | `GITHUB_TOKEN` | Yes | GitHub API (5000 req/hr) |
 | `ANTHROPIC_API_KEY` | Yes | LLM generation via Claude |
+| `OPENAI_API_KEY` | Yes | Embeddings via text-embedding-3-small |
