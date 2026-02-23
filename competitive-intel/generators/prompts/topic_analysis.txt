@@ -38,4 +38,56 @@ Based ONLY on the source documents provided above, produce a competitive analysi
 
 7. **Gaps**: List any sub-topics where you couldn't find sufficient source data.
 
-Respond with a JSON object matching the CompetitiveEntry schema. Every claim must cite its source URL.
+Every claim must cite its source URL.
+
+Respond with a JSON object using EXACTLY this structure (no deviations):
+
+```json
+{
+  "competitor_assessment": {
+    "summary": "What the competitor offers for this topic",
+    "strengths": ["strength 1", "strength 2"],
+    "details": "Detailed factual analysis with inline [Source: URL] citations",
+    "citations": [
+      {"url": "https://...", "title": "Page title", "source_type": "official_docs", "excerpt": "Relevant excerpt"}
+    ]
+  },
+  "competitor_limitations": [
+    {
+      "limitation": "Description of the limitation",
+      "evidence_type": "confirmed | reported | inferred",
+      "details": "Supporting details with citations",
+      "citations": [{"url": "...", "title": "...", "source_type": "...", "excerpt": "..."}]
+    }
+  ],
+  "kx_differentiators": [
+    {
+      "differentiator": "Where KDB+ wins",
+      "explanation": "Why this matters",
+      "evidence": "Specific evidence with citations",
+      "citations": [{"url": "...", "title": "...", "source_type": "...", "excerpt": "..."}]
+    }
+  ],
+  "objection_handlers": [
+    {
+      "objection": "Prospect's objection or question",
+      "response": "Recommended response with evidence",
+      "supporting_evidence": ["evidence point 1"],
+      "tone": "consultative",
+      "citations": [{"url": "...", "title": "...", "source_type": "...", "excerpt": "..."}]
+    }
+  ],
+  "elevator_pitch": {
+    "pitch": "2-3 sentence summary for quick conversations",
+    "key_stat": "One compelling statistic or proof point (or null)"
+  },
+  "confidence": "high | medium | low",
+  "gaps": ["sub-topic needing more research"]
+}
+```
+
+IMPORTANT:
+- competitor_limitations MUST be a flat JSON array, NOT grouped by category.
+- kx_differentiators MUST be an array of objects, NOT an array of strings.
+- elevator_pitch MUST be an object with "pitch" and "key_stat" fields, NOT a string.
+- competitor_assessment MUST include the "details" field.
