@@ -159,6 +159,8 @@ class ComparisonGenerator:
         competitor_records: list[SourceRecord],
         taxonomy_config: dict,
         topics: Optional[list[str]] = None,
+        output_dir: Optional[Path] = None,
+        resume: bool = True,
     ) -> list[CompetitiveEntry]:
         """Generate competitive entries for all (or specified) topics.
 
@@ -168,6 +170,11 @@ class ComparisonGenerator:
             competitor_records: All competitor source records.
             taxonomy_config: Full taxonomy config.
             topics: Optional list of specific topic IDs to generate.
+            output_dir: Optional directory to save each entry incrementally.
+                        When set, each topic is saved to its own JSON file
+                        immediately after generation.
+            resume: If True and output_dir is set, skip topics that already
+                    have a saved file from a previous run.
 
         Returns:
             List of CompetitiveEntry objects.
@@ -184,7 +191,28 @@ class ComparisonGenerator:
         comp_by_topic = self._index_by_topic(competitor_records)
 
         entries = []
-        for topic_id in topic_ids:
+        skipped = 0
+        for i, topic_id in enumerate(topic_ids, 1):
+            # Resume: skip topics that already have a saved file
+            topic_file = None
+            if output_dir:
+                topic_file = output_dir / f"topic_{topic_id}.json"
+                if resume and topic_file.exists():
+                    try:
+                        existing = json.loads(topic_file.read_text())
+                        entry = CompetitiveEntry(**existing)
+                        entries.append(entry)
+                        skipped += 1
+                        logger.info(
+                            "[%d/%d] Skipping topic '%s' (already generated)",
+                            i, len(topic_ids), topic_id,
+                        )
+                        continue
+                    except Exception:
+                        logger.warning(
+                            "Corrupt saved file for topic %s, regenerating", topic_id
+                        )
+
             # Get topic metadata from taxonomy
             topic_name = topic_id
             topic_desc = ""
@@ -199,9 +227,16 @@ class ComparisonGenerator:
             comp_srcs = comp_by_topic.get(topic_id, [])
 
             if not kx_srcs and not comp_srcs:
-                logger.warning("No sources for topic %s, skipping", topic_id)
+                logger.warning(
+                    "[%d/%d] No sources for topic %s, skipping",
+                    i, len(topic_ids), topic_id,
+                )
                 continue
 
+            logger.info(
+                "[%d/%d] Generating topic '%s'...",
+                i, len(topic_ids), topic_id,
+            )
             entry = self.generate_topic(
                 topic_id=topic_id,
                 topic_name=topic_name,
@@ -212,6 +247,19 @@ class ComparisonGenerator:
                 taxonomy_config=taxonomy_config,
             )
             entries.append(entry)
+
+            # Save incrementally so progress survives crashes
+            if topic_file:
+                topic_file.write_text(
+                    json.dumps(entry.model_dump(mode="json"), indent=2)
+                )
+                logger.info("  Saved %s", topic_file.name)
+
+        if skipped:
+            logger.info(
+                "Resumed: %d topics loaded from cache, %d newly generated",
+                skipped, len(entries) - skipped,
+            )
 
         return entries
 
