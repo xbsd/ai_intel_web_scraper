@@ -76,10 +76,13 @@ class ObjectionGenerator:
 
         try:
             data = json.loads(json_text)
+            if isinstance(data, dict):
+                data = data.get("objection_handlers", data.get("handlers", []))
             if isinstance(data, list):
-                return [ObjectionHandler(**item) for item in data]
-            elif isinstance(data, dict) and "objection_handlers" in data:
-                return [ObjectionHandler(**item) for item in data["objection_handlers"]]
+                return [
+                    ObjectionHandler(**self._normalize_handler(item))
+                    for item in data
+                ]
             else:
                 logger.error("Unexpected response structure for objection handlers")
                 return []
@@ -126,15 +129,77 @@ class ObjectionGenerator:
 
         try:
             data = json.loads(json_text)
+            if isinstance(data, dict):
+                # Try common wrapper keys
+                for key in ("objection_handlers", "handlers", "themes",
+                            "cross_cutting_themes", "cross_cutting"):
+                    if key in data:
+                        data = data[key]
+                        break
+                else:
+                    # Single item dict that isn't a list wrapper — wrap it
+                    data = [data]
             if isinstance(data, list):
-                return [ObjectionHandler(**item) for item in data]
-            elif isinstance(data, dict):
-                items = data.get("objection_handlers", data.get("handlers", []))
-                return [ObjectionHandler(**item) for item in items]
+                return [
+                    ObjectionHandler(**self._normalize_handler(item))
+                    for item in data
+                ]
             return []
         except (json.JSONDecodeError, Exception) as e:
             logger.error("Failed to parse cross-cutting themes: %s", e)
             return []
+
+    @staticmethod
+    def _normalize_handler(item: dict) -> dict:
+        """Normalize LLM response dict to match ObjectionHandler schema.
+
+        Common deviations the LLM produces:
+        - 'theme' instead of 'objection'
+        - 'rebuttal'/'counter'/'talking_points' instead of 'response'
+        - nested 'kx_positioning'/'evidence' dicts instead of flat fields
+        """
+        # Map alternative field names → objection
+        if "objection" not in item:
+            for alt in ("theme", "concern", "pushback", "question"):
+                if alt in item:
+                    item["objection"] = item.pop(alt)
+                    break
+
+        # Map alternative field names → response
+        if "response" not in item:
+            for alt in ("rebuttal", "counter", "counter_argument",
+                        "talking_points", "kx_positioning"):
+                if alt in item:
+                    val = item.pop(alt)
+                    if isinstance(val, dict):
+                        # Flatten nested dict into a readable string
+                        item["response"] = "; ".join(
+                            f"{k}: {v}" for k, v in val.items()
+                            if isinstance(v, str)
+                        )
+                    elif isinstance(val, list):
+                        item["response"] = " ".join(str(v) for v in val)
+                    else:
+                        item["response"] = str(val)
+                    break
+
+        # Last resort: synthesize response from remaining fields
+        if "response" not in item:
+            item["response"] = item.get("objection", "See supporting evidence.")
+
+        # Pull evidence out of nested structures
+        if "supporting_evidence" not in item:
+            evidence = item.pop("evidence", None)
+            if isinstance(evidence, list):
+                item["supporting_evidence"] = [str(e) for e in evidence]
+            elif isinstance(evidence, dict):
+                item["supporting_evidence"] = [
+                    f"{k}: {v}" for k, v in evidence.items()
+                ]
+            elif isinstance(evidence, str):
+                item["supporting_evidence"] = [evidence]
+
+        return item
 
     def _format_sources(self, records: list[SourceRecord]) -> str:
         """Format sources for prompt inclusion, truncating to fit."""

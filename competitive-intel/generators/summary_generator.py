@@ -86,19 +86,43 @@ class SummaryGenerator:
 
         try:
             data = json.loads(json_text)
+
+            # --- comparison_table: accept list of rows or {rows: [...]} ---
+            ct = data.get("comparison_table", {})
+            if isinstance(ct, list):
+                ct_rows = ct
+            elif isinstance(ct, dict):
+                ct_rows = ct.get("rows", [])
+            else:
+                ct_rows = []
+
+            # --- cross_cutting_objections: normalize handler dicts ---
+            from generators.objection_generator import ObjectionGenerator
+            raw_objections = data.get("cross_cutting_objections", [])
+            if isinstance(raw_objections, list):
+                raw_objections = [
+                    ObjectionGenerator._normalize_handler(item)
+                    if isinstance(item, dict) else item
+                    for item in raw_objections
+                ]
+
+            # --- deal_stage_talking_points: accept dict or list ---
+            dstp = data.get("deal_stage_talking_points", {})
+            if isinstance(dstp, list):
+                # LLM sometimes returns a flat list; put them all in discovery
+                dstp = {"discovery": dstp}
+
             return PositioningNarrative(
                 competitor=competitor_name,
                 generated_date=date.today(),
                 sixty_second_pitch=data.get("sixty_second_pitch", ""),
-                cross_cutting_objections=data.get("cross_cutting_objections", []),
+                cross_cutting_objections=raw_objections,
                 comparison_table=ComparisonTable(
                     competitor=competitor_name,
                     generated_date=date.today(),
-                    rows=data.get("comparison_table", {}).get("rows", []),
+                    rows=ct_rows,
                 ),
-                deal_stage_talking_points=DealStageTalkingPoints(
-                    **data.get("deal_stage_talking_points", {})
-                ),
+                deal_stage_talking_points=DealStageTalkingPoints(**dstp),
                 model_used=self.model,
             )
         except (json.JSONDecodeError, Exception) as e:

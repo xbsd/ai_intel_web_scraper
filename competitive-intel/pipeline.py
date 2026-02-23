@@ -231,9 +231,11 @@ def cmd_generate(args):
 
     competitor = args.competitor
     topic_filter = args.topic
+    step = getattr(args, "step", None)
 
     logger.info("=" * 60)
-    logger.info("GENERATING: KX vs %s", competitor)
+    logger.info("GENERATING: KX vs %s%s", competitor,
+                f" (step={step})" if step else "")
     logger.info("=" * 60)
 
     taxonomy = load_taxonomy()
@@ -264,26 +266,42 @@ def cmd_generate(args):
     output_dir = GENERATED_DIR / competitor
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Determine which steps to run (default: all)
+    run_topics = step in (None, "topics")
+    run_objections = step in (None, "objections") and not topic_filter
+    run_narrative = step in (None, "narrative") and not topic_filter
+
+    entries = []
+
     # Step 1: Generate per-topic competitive entries
-    topics = [topic_filter] if topic_filter else None
-    resume = not getattr(args, "no_resume", False)
-    comp_gen = ComparisonGenerator()
-    entries = comp_gen.generate_all_topics(
-        competitor_name=competitor_name,
-        kx_records=kx_records,
-        competitor_records=comp_records,
-        taxonomy_config=taxonomy,
-        topics=topics,
-        output_dir=output_dir,
-        resume=resume,
-    )
+    if run_topics:
+        topics = [topic_filter] if topic_filter else None
+        resume = not getattr(args, "no_resume", False)
+        comp_gen = ComparisonGenerator()
+        entries = comp_gen.generate_all_topics(
+            competitor_name=competitor_name,
+            kx_records=kx_records,
+            competitor_records=comp_records,
+            taxonomy_config=taxonomy,
+            topics=topics,
+            output_dir=output_dir,
+            resume=resume,
+        )
 
-    if entries:
-        save_records(entries, str(output_dir), f"{competitor}_topic_entries.json")
-        logger.info("Generated %d topic entries", len(entries))
+        if entries:
+            save_records(entries, str(output_dir), f"{competitor}_topic_entries.json")
+            logger.info("Generated %d topic entries", len(entries))
+    else:
+        # Load existing topic entries from disk for downstream steps
+        entries_path = output_dir / f"{competitor}_topic_entries.json"
+        if entries_path.exists():
+            from schemas.competitive_entry import CompetitiveEntry
+            for item in load_records(str(entries_path)):
+                entries.append(CompetitiveEntry(**item))
+            logger.info("Loaded %d existing topic entries from disk", len(entries))
 
-    # Step 2: Generate cross-cutting objection handlers (only if doing full generation)
-    if not topic_filter:
+    # Step 2: Generate cross-cutting objection handlers
+    if run_objections:
         obj_gen = ObjectionGenerator()
 
         objections = obj_gen.generate_objections(
@@ -308,7 +326,8 @@ def cmd_generate(args):
             )
             logger.info("Generated %d cross-cutting handlers", len(cross_cutting))
 
-        # Step 3: Generate positioning narrative
+    # Step 3: Generate positioning narrative
+    if run_narrative:
         sum_gen = SummaryGenerator()
         narrative = sum_gen.generate_narrative(
             competitor_name=competitor_name,
@@ -651,6 +670,12 @@ def main():
         "--no-resume",
         action="store_true",
         help="Regenerate all topics from scratch (ignore cached results)",
+    )
+    generate_parser.add_argument(
+        "--step",
+        choices=["topics", "objections", "narrative"],
+        default=None,
+        help="Run only a specific generation step (skips the others)",
     )
 
     # Status
