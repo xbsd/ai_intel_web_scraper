@@ -42,28 +42,44 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
+> **Sample raw data ships with the repo.** Scraped data for KX and QuestDB is checked into
+> git so you can explore the pipeline immediately after cloning. The vector database
+> (ChromaDB) is **not** included — run `python pipeline.py vectorize --target all` to build it.
+> Re-scrape to get the full, latest dataset, or to add a new competitor.
+
 ---
 
 ## Step 1: Scrape Data
 
-KX data has already been scraped (1111 records, 33 files). QuestDB has also been scraped (530 records, 8 files). You can verify with:
+Sample data for KX (~1100 records) and QuestDB (~530 records) ships with the repo. You can verify immediately after cloning:
 
 ```bash
 python pipeline.py status
 ```
 
-To re-scrape or scrape a new target:
+To **refresh** existing data or **add a new competitor**, scrape the target. **Always scrape KX first** if starting from scratch — it is the baseline knowledge base shared across all competitor comparisons.
 
 ```bash
-# Scrape KX (our own product — scraped once, shared across all comparisons)
+# Re-scrape KX to get latest data
 python pipeline.py scrape --target kx
 
-# Scrape a competitor
+# Re-scrape a competitor
 python pipeline.py scrape --target questdb
 
-# Scrape all configured targets
+# Scrape a new competitor (after creating its config)
+python pipeline.py scrape --target clickhouse
+
+# Or scrape everything in one go
 python pipeline.py scrape --target all
+
+# Verify data was collected
+python pipeline.py status
 ```
+
+If scraping returns 0 records, check:
+- Is your `.env` populated? (`GITHUB_TOKEN` is needed for GitHub sources)
+- Are you in the `competitive-intel/` directory?
+- Check `pipeline.log` for errors: `tail -50 pipeline.log`
 
 What gets scraped (per competitor config in `config/competitors/*.json`):
 - **Documentation** — website crawl with configurable depth and CSS selectors
@@ -436,21 +452,42 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ---
 
-## Current Data Status
+## Data Storage and Git
 
-As of the initial setup:
+Sample **raw** scraped data ships with the repo so you can explore the pipeline immediately. The vector database does **not** ship — you build it yourself with `vectorize`. After cloning:
 
-| Target | Raw Records | Files | Vectorized | Notes |
-|--------|------------|-------|------------|-------|
-| KX | 1,111 | 33 | 543 chunks (50 records sampled) | Our product. Scraped from kx.com, GitHub, blog |
-| QuestDB | 530 | 8 | Not yet | Scraped from questdb.io, GitHub, community |
-| ClickHouse | 0 | 0 | Not yet | Config ready, not yet scraped |
+```
+data/
+├── raw/           # Sample KX + QuestDB scraped data included
+├── processed/     # Empty — populated by `process`
+├── generated/     # Empty — populated by `generate`
+├── reviewed/      # Empty — populated manually after SE review
+└── vectordb/      # Empty (gitignored) — populated by `vectorize`
+```
 
-To fully vectorize everything:
+After cloning, the quickest path to a working vector store:
 
 ```bash
-# Full vectorize (estimated ~3-4 minutes based on dry-run extrapolation)
-python pipeline.py vectorize --target all --reset
+python pipeline.py vectorize --target all    # builds ChromaDB from the sample raw data
+python pipeline.py vector-query "kdb performance"  # verify it works
+```
+
+Re-scrape targets to get the full, latest dataset. If raw data grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
+
+### Data volumes after a full run
+
+| Target | Raw Records | Raw Files | Vector Chunks | Notes |
+|--------|------------|-----------|---------------|-------|
+| KX | ~1,100 | ~33 | ~10,000+ | Our product — baseline for all comparisons |
+| QuestDB | ~530 | ~8 | ~5,000+ | Primary competitor |
+| ClickHouse | ~500+ | varies | ~5,000+ | Config ready, scrape to populate |
+
+To rebuild the full vector database (e.g. after re-scraping):
+
+```bash
+python pipeline.py scrape --target all        # ~5-15 min depending on rate limits
+python pipeline.py process --target all       # ~1 min
+python pipeline.py vectorize --target all     # ~3-4 min
 ```
 
 ---
@@ -478,6 +515,9 @@ python dry_run.py --max-records 50 --timeout 120
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| `status` shows 0 records after scraping | `.env` not configured or network issue | Check `GITHUB_TOKEN` in `.env`, check `pipeline.log` |
+| `vector-status` shows 0 vectors | Haven't vectorized yet | Run `python pipeline.py vectorize --target all` |
+| `vector-query` returns no results | No data in vector store | Run vectorize first |
 | Embedding step fails silently | `OPENAI_API_KEY` not set | Add to `.env` |
 | GitHub scraping returns 403 | `GITHUB_TOKEN` not set or expired | Regenerate token |
 | Reddit scraping returns 403 | Reddit blocks unauthenticated API | Expected — HN data still works |
