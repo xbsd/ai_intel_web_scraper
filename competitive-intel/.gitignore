@@ -9,6 +9,7 @@ data/raw/*
 data/processed/*
 data/generated/*
 data/reviewed/*
+data/vectordb/
 # Keep directory structure
 !data/raw/.gitkeep
 !data/processed/.gitkeep
