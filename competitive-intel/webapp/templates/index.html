@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competitive Intelligence — Q&A Terminal</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    /* Prevent FOUC */
+    body { opacity: 0; transition: opacity 150ms ease-out; }
+    body.loaded { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- ═══ TOP NAVIGATION ═══ -->
+  <nav class="top-nav">
+    <div class="top-nav__brand">
+      <span class="top-nav__logo">KX</span>
+      <div class="top-nav__separator"></div>
+      <span class="top-nav__subtitle">Competitive Intelligence</span>
+    </div>
+    <div class="top-nav__actions">
+      <div class="top-nav__status">
+        <span class="top-nav__status-dot top-nav__status-dot--offline" id="nav-status-dot"></span>
+        <span id="nav-status-text">Connecting</span>
+      </div>
+      <button class="btn-settings" id="btn-open-settings">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="10" cy="10" r="3"/>
+          <path d="M10 1v2m0 14v2M1 10h2m14 0h2m-2.9-6.4-1.4 1.4M5.3 14.7l-1.4 1.4m0-11.8 1.4 1.4m9.4 9.4 1.4 1.4"/>
+        </svg>
+        Settings
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN LAYOUT ═══ -->
+  <div class="layout">
+    <!-- ── Left: Query + Conversation ── -->
+    <div class="main-content">
+
+      <!-- Query Input -->
+      <div class="query-section">
+        <div class="query-section__label">Ask a Competitive Question</div>
+        <div class="query-input-row">
+          <textarea
+            id="query-input"
+            class="query-input"
+            placeholder="e.g. How does QuestDB's ingestion throughput compare to kdb+?"
+            rows="1"
+          ></textarea>
+          <button class="btn-submit" id="btn-submit">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+            </svg>
+            Query
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-row">
+          <div class="filter-group">
+            <span class="filter-label">Competitor</span>
+            <select class="filter-select" id="filter-competitor">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Topic</span>
+            <select class="filter-select" id="filter-topic">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Source</span>
+            <select class="filter-select" id="filter-source">
+              <option value="">All</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversation -->
+      <div class="conversation" id="conversation">
+        <div class="conversation__empty" id="conversation-empty">
+          <svg class="conversation__empty-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="4" y="8" width="40" height="32" rx="2"/>
+            <path d="M4 16h40M16 8v8"/>
+            <line x1="12" y1="24" x2="36" y2="24"/>
+            <line x1="12" y1="30" x2="28" y2="30"/>
+            <line x1="12" y1="36" x2="32" y2="36"/>
+          </svg>
+          <div class="conversation__empty-title">Competitive Intelligence Terminal</div>
+          <div class="conversation__empty-desc">
+            Ask questions about competitive positioning, product capabilities,
+            and market intelligence. Answers are grounded in scraped data with
+            full source citations.
+          </div>
+          <div class="conversation__empty-examples">
+            <button class="example-query" onclick="window.__runExample(this)">How does QuestDB's query latency compare to kdb+ for time-series analytics?</button>
+            <button class="example-query" onclick="window.__runExample(this)">What are the main limitations of ClickHouse for real-time streaming workloads?</button>
+            <button class="example-query" onclick="window.__runExample(this)">What do community discussions say about QuestDB's high availability capabilities?</button>
+            <button class="example-query" onclick="window.__runExample(this)">Compare ingestion throughput benchmarks across all competitors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right Rail ── -->
+    <div class="right-rail">
+      <!-- Citations -->
+      <div class="rail-section">
+        <div class="rail-section__header">
+          Sources & Citations
+          <span class="rail-section__count" id="citations-count">0</span>
+        </div>
+        <div class="rail-section__body" id="citations-list">
+          <div style="padding:12px 16px;font-size:12px;color:var(--text-tertiary)">
+            Submit a query to see source citations
+          </div>
+        </div>
+      </div>
+
+      <!-- Query Metadata -->
+      <div class="rail-section">
+        <div class="rail-section__header">
+          Query Metadata
+        </div>
+        <div class="rail-section__body" id="metadata-body">
+          <table class="metadata-table">
+            <tr><td>Provider</td><td>-</td></tr>
+            <tr><td>Model</td><td>-</td></tr>
+            <tr><td>Total Time</td><td>-</td></tr>
+            <tr><td>Chunks Found</td><td>-</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS MODAL ═══ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal__header">
+        <span class="modal__title">Configuration</span>
+        <button class="modal__close" id="btn-close-settings">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="4" x2="12" y2="12"/>
+            <line x1="12" y1="4" x2="4" y2="12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <!-- Provider Selection -->
+        <div class="form-group">
+          <label class="form-label">LLM Provider</label>
+          <select class="form-select" id="settings-provider">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI</option>
+          </select>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="form-group">
+          <label class="form-label">Model</label>
+          <select class="form-select" id="settings-model">
+            <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+          </select>
+        </div>
+
+        <!-- Anthropic API Key -->
+        <div class="form-group">
+          <label class="form-label">Anthropic API Key</label>
+          <input
+            type="password"
+            class="form-input"
+            id="settings-anthropic-key"
+            placeholder="sk-ant-..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <div class="key-status">
+            <span class="key-status__dot key-status__dot--unset" id="key-status-anthropic-dot"></span>
+            <span class="key-status__text" id="key-status-anthropic-text">Not configured</span>
+          </div>
+          <div class="form-hint">Used for answer generation with Claude models</div>
+        </div>
+
+        <!-- OpenAI API Key -->
+        <div class="form-group">
+          <label class="form-label">OpenAI API Key</label>
+          <input
+            type="password"
+            class="form-input"
+            id="settings-openai-key"
+            placeholder="sk-..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <div class="key-status">
+            <span class="key-status__dot key-status__dot--unset" id="key-status-openai-dot"></span>
+            <span class="key-status__text" id="key-status-openai-text">Not configured</span>
+          </div>
+          <div class="form-hint">Required for embeddings (text-embedding-3-small). Also used for GPT models.</div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-secondary" id="btn-cancel-settings">Cancel</button>
+        <button class="btn-primary" id="btn-save-settings">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST ═══ -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Remove FOUC prevention
+    document.body.classList.add('loaded');
+  </script>
+</body>
+</html>

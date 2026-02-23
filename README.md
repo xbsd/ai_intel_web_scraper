@@ -35,6 +35,10 @@ python pipeline.py generate --competitor questdb
 # 6. Export for SE review
 python pipeline.py export --competitor questdb
 
+# 7. Launch the Q&A web interface
+python pipeline.py serve --port 8501
+# Open http://localhost:8501
+
 # Check status at any time
 python pipeline.py status
 ```
@@ -73,6 +77,14 @@ competitive-intel/
 │   ├── objection_generator.py  # Objection handlers
 │   ├── summary_generator.py    # Positioning narratives
 │   └── prompts/               # Prompt templates
+├── webapp/                    # Q&A web interface (FastAPI)
+│   ├── app.py                 # FastAPI application & API endpoints
+│   ├── rag/                   # RAG engine (query analysis, retrieval, synthesis)
+│   │   ├── query_engine.py    # Orchestrator: HyDE, multi-query, CoT, citations
+│   │   ├── retriever.py       # Advanced retrieval with RRF fusion
+│   │   └── prompts.py         # System prompts for analysis & synthesis
+│   ├── templates/             # HTML templates
+│   └── static/                # CSS design system + JS frontend
 ├── schemas/                   # Pydantic data models
 ├── data/                      # Pipeline data (sample raw data checked into git)
 │   ├── raw/                   # Scraped data (KX + QuestDB samples included)

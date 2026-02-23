@@ -19,6 +19,8 @@ Usage:
 
   python pipeline.py status                              # Show pipeline status
   python pipeline.py export --competitor questdb          # Export for review
+
+  python pipeline.py serve --port 8501                   # Launch Q&A web interface
 """
 
 import argparse
@@ -539,6 +541,24 @@ def cmd_vector_status(args):
     print("\n" + "=" * 70)
 
 
+def cmd_serve(args):
+    """Launch the Q&A web application."""
+    import uvicorn
+
+    logger.info("=" * 60)
+    logger.info("LAUNCHING Q&A WEB INTERFACE")
+    logger.info("  http://localhost:%d", args.port)
+    logger.info("=" * 60)
+
+    uvicorn.run(
+        "webapp.app:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+        log_level="info",
+    )
+
+
 def cmd_vector_query(args):
     """Run a test query against the vector store."""
     from vectorstore.store import VectorStore
@@ -663,6 +683,20 @@ def main():
         help="Token overlap between chunks (default: 60)",
     )
 
+    # Serve (web UI)
+    serve_parser = subparsers.add_parser(
+        "serve", help="Launch the Q&A web interface"
+    )
+    serve_parser.add_argument(
+        "--port", type=int, default=8501, help="Port (default: 8501)"
+    )
+    serve_parser.add_argument(
+        "--host", default="0.0.0.0", help="Host (default: 0.0.0.0)"
+    )
+    serve_parser.add_argument(
+        "--reload", action="store_true", help="Auto-reload on code changes"
+    )
+
     # Vector status
     subparsers.add_parser("vector-status", help="Show vector store statistics")
 
@@ -688,6 +722,7 @@ def main():
         "vectorize": cmd_vectorize,
         "vector-status": cmd_vector_status,
         "vector-query": cmd_vector_query,
+        "serve": cmd_serve,
     }
 
     try:
