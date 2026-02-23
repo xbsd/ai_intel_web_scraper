@@ -266,6 +266,7 @@ def cmd_generate(args):
 
     # Step 1: Generate per-topic competitive entries
     topics = [topic_filter] if topic_filter else None
+    resume = not getattr(args, "no_resume", False)
     comp_gen = ComparisonGenerator()
     entries = comp_gen.generate_all_topics(
         competitor_name=competitor_name,
@@ -273,6 +274,8 @@ def cmd_generate(args):
         competitor_records=comp_records,
         taxonomy_config=taxonomy,
         topics=topics,
+        output_dir=output_dir,
+        resume=resume,
     )
 
     if entries:
@@ -643,6 +646,11 @@ def main():
         "--topic",
         default=None,
         help="Specific topic ID (optional)",
+    )
+    generate_parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Regenerate all topics from scratch (ignore cached results)",
     )
 
     # Status
