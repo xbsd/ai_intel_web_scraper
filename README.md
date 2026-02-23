@@ -8,9 +8,9 @@ KX is the constant. Competitors are pluggable. The KX knowledge base is scraped 
 
 ## Quick Start
 
-> **Note:** Sample scraped data for KX and QuestDB (~20 MB) ships with the repo so you
-> can explore the pipeline immediately after cloning. Re-scrape to get the full, latest dataset.
-> See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
+> **Note:** Sample raw data for KX and QuestDB ships with the repo so you can explore
+> the pipeline immediately after cloning. Run `vectorize` to build the vector database,
+> then re-scrape to get the full, latest dataset. See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
 
 ```bash
 cd competitive-intel
@@ -74,11 +74,12 @@ competitive-intel/
 │   ├── summary_generator.py    # Positioning narratives
 │   └── prompts/               # Prompt templates
 ├── schemas/                   # Pydantic data models
-├── data/                      # Pipeline data (~20 MB sample checked into git)
+├── data/                      # Pipeline data (sample raw data checked into git)
 │   ├── raw/                   # Scraped data (KX + QuestDB samples included)
 │   ├── processed/             # Tagged, filtered, deduplicated
 │   ├── generated/             # LLM-generated content
-│   └── reviewed/              # Human-approved final content
+│   ├── reviewed/              # Human-approved final content
+│   └── vectordb/              # ChromaDB (gitignored — run `vectorize` to build)
 ├── pipeline.py                # Main orchestrator
 ├── dry_run.py                 # Test vectorization on a small sample
 ├── RUNBOOK.md                 # Full end-to-end operating guide

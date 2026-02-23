@@ -4,17 +4,20 @@
 venv/
 env/
 
-# Data directories — sample data checked in so fresh clones can explore the pipeline.
-# Total size is ~20 MB which is well within git limits.
+# Sample raw data is checked in so fresh clones can explore the pipeline (~8 MB).
 # If data grows significantly (>500 MB), consider re-adding these ignores
 # and using Git LFS or a separate data download step instead.
 #
-# Uncomment these lines to stop tracking data:
+# Uncomment these lines to stop tracking raw data:
 # data/raw/*
 # data/processed/*
 # data/generated/*
 # data/reviewed/*
-# data/vectordb/
+
+# Vector database — always gitignored (binary, regeneratable).
+# Run `python pipeline.py vectorize --target all` after cloning.
+data/vectordb/
+!data/vectordb/.gitkeep
 
 # Python
 __pycache__/

@@ -42,8 +42,9 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
-> **Sample data ships with the repo.** A snapshot of scraped data for KX and QuestDB (~20 MB)
-> is checked into git so you can explore the pipeline immediately after cloning.
+> **Sample raw data ships with the repo.** Scraped data for KX and QuestDB is checked into
+> git so you can explore the pipeline immediately after cloning. The vector database
+> (ChromaDB) is **not** included — run `python pipeline.py vectorize --target all` to build it.
 > Re-scrape to get the full, latest dataset, or to add a new competitor.
 
 ---
@@ -453,18 +454,25 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ## Data Storage and Git
 
-A **sample** of scraped data (~20 MB) is checked into git so the pipeline works out of the box. After cloning, you have:
+Sample **raw** scraped data ships with the repo so you can explore the pipeline immediately. The vector database does **not** ship — you build it yourself with `vectorize`. After cloning:
 
 ```
 data/
 ├── raw/           # Sample KX + QuestDB scraped data included
-├── processed/     # Populated by `process`
-├── generated/     # Populated by `generate`
-├── reviewed/      # Populated manually after SE review
-└── vectordb/      # Sample KX vectors included (from dry-run)
+├── processed/     # Empty — populated by `process`
+├── generated/     # Empty — populated by `generate`
+├── reviewed/      # Empty — populated manually after SE review
+└── vectordb/      # Empty (gitignored) — populated by `vectorize`
 ```
 
-Re-scrape targets to get the full, latest dataset. If the data directory grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
+After cloning, the quickest path to a working vector store:
+
+```bash
+python pipeline.py vectorize --target all    # builds ChromaDB from the sample raw data
+python pipeline.py vector-query "kdb performance"  # verify it works
+```
+
+Re-scrape targets to get the full, latest dataset. If raw data grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
 
 ### Data volumes after a full run
 
