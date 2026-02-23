@@ -8,6 +8,9 @@ KX is the constant. Competitors are pluggable. The KX knowledge base is scraped 
 
 ## Quick Start
 
+> **Note:** The `data/` directory is gitignored — a fresh clone starts with **zero data**.
+> You must run the scrape step to populate it. See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
+
 ```bash
 cd competitive-intel
 
@@ -18,8 +21,8 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your API keys (GITHUB_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY)
 
-# 3. Scrape data
-python pipeline.py scrape --target kx
+# 3. Scrape data (required after every fresh clone)
+python pipeline.py scrape --target kx       # Always scrape KX first
 python pipeline.py scrape --target questdb
 
 # 4. Process (tag, filter, deduplicate)
@@ -70,8 +73,8 @@ competitive-intel/
 │   ├── summary_generator.py    # Positioning narratives
 │   └── prompts/               # Prompt templates
 ├── schemas/                   # Pydantic data models
-├── data/                      # Pipeline data (gitignored)
-│   ├── raw/                   # Scraped data
+├── data/                      # Pipeline data (⚠️ gitignored — empty after clone)
+│   ├── raw/                   # Scraped data (run `scrape` to populate)
 │   ├── processed/             # Tagged, filtered, deduplicated
 │   ├── generated/             # LLM-generated content
 │   └── reviewed/              # Human-approved final content

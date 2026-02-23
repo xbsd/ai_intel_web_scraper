@@ -42,28 +42,44 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
+> **Important: Fresh clone = empty data.**
+> The `data/` directory is gitignored (scraped data is large and regeneratable).
+> After cloning the repo, `python pipeline.py status` will show **0 records for everything**.
+> You must run the scrape step below to populate it. This is expected.
+
 ---
 
 ## Step 1: Scrape Data
 
-KX data has already been scraped (1111 records, 33 files). QuestDB has also been scraped (530 records, 8 files). You can verify with:
+After a fresh clone, you need to scrape all targets. **Always scrape KX first** — it is the baseline knowledge base shared across all competitor comparisons.
 
 ```bash
+# 1. Scrape KX first (our own product — the constant baseline)
+python pipeline.py scrape --target kx
+
+# 2. Then scrape competitors
+python pipeline.py scrape --target questdb
+python pipeline.py scrape --target clickhouse
+
+# Or scrape everything in one go (KX + all competitors)
+python pipeline.py scrape --target all
+
+# 3. Verify data was collected
 python pipeline.py status
 ```
 
-To re-scrape or scrape a new target:
+Expected output after scraping (approximate — varies as source sites change):
 
-```bash
-# Scrape KX (our own product — scraped once, shared across all comparisons)
-python pipeline.py scrape --target kx
-
-# Scrape a competitor
-python pipeline.py scrape --target questdb
-
-# Scrape all configured targets
-python pipeline.py scrape --target all
 ```
+Target: kx          Raw: ~1100 records (33 files)
+Target: questdb     Raw: ~530 records  (8 files)
+Target: clickhouse  Raw: varies        (depends on max_pages config)
+```
+
+If you see 0 records after scraping, check:
+- Is your `.env` populated? (`GITHUB_TOKEN` is needed for GitHub sources)
+- Are you in the `competitive-intel/` directory?
+- Check `pipeline.log` for errors: `tail -50 pipeline.log`
 
 What gets scraped (per competitor config in `config/competitors/*.json`):
 - **Documentation** — website crawl with configurable depth and CSS selectors
@@ -436,21 +452,35 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ---
 
-## Current Data Status
+## Data Storage and Git
 
-As of the initial setup:
+The `data/` directory is **gitignored**. After a fresh clone, all data directories are empty:
 
-| Target | Raw Records | Files | Vectorized | Notes |
-|--------|------------|-------|------------|-------|
-| KX | 1,111 | 33 | 543 chunks (50 records sampled) | Our product. Scraped from kx.com, GitHub, blog |
-| QuestDB | 530 | 8 | Not yet | Scraped from questdb.io, GitHub, community |
-| ClickHouse | 0 | 0 | Not yet | Config ready, not yet scraped |
+```
+data/
+├── raw/           # Empty — populated by `scrape`
+├── processed/     # Empty — populated by `process`
+├── generated/     # Empty — populated by `generate`
+├── reviewed/      # Empty — populated manually after SE review
+└── vectordb/      # Empty — populated by `vectorize`
+```
 
-To fully vectorize everything:
+This is by design — scraped data is large (hundreds of MB) and fully regeneratable from the pipeline. **You must run the pipeline from Step 1 (scrape) after every fresh clone.**
+
+### Expected data volumes after a full run
+
+| Target | Raw Records | Raw Files | Vector Chunks | Notes |
+|--------|------------|-----------|---------------|-------|
+| KX | ~1,100 | ~33 | ~10,000+ | Our product — baseline for all comparisons |
+| QuestDB | ~530 | ~8 | ~5,000+ | Primary competitor |
+| ClickHouse | ~500+ | varies | ~5,000+ | Config ready, scrape to populate |
+
+To build the full vector database from scratch:
 
 ```bash
-# Full vectorize (estimated ~3-4 minutes based on dry-run extrapolation)
-python pipeline.py vectorize --target all --reset
+python pipeline.py scrape --target all        # ~5-15 min depending on rate limits
+python pipeline.py process --target all       # ~1 min
+python pipeline.py vectorize --target all     # ~3-4 min
 ```
 
 ---
@@ -478,6 +508,9 @@ python dry_run.py --max-records 50 --timeout 120
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| `status` shows 0 records everywhere | Fresh clone — `data/` is gitignored | Run `python pipeline.py scrape --target all` first |
+| `vector-status` shows 0 vectors | Haven't vectorized yet | Run `python pipeline.py vectorize --target all` |
+| `vector-query` returns no results | No data in vector store | Scrape first, then vectorize |
 | Embedding step fails silently | `OPENAI_API_KEY` not set | Add to `.env` |
 | GitHub scraping returns 403 | `GITHUB_TOKEN` not set or expired | Regenerate token |
 | Reddit scraping returns 403 | Reddit blocks unauthenticated API | Expected — HN data still works |
