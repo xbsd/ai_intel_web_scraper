@@ -96,6 +96,9 @@ class SummaryGenerator:
             else:
                 ct_rows = []
 
+            # Normalize each row to match ComparisonRow schema
+            ct_rows = [self._normalize_comparison_row(r, competitor_name) for r in ct_rows if isinstance(r, dict)]
+
             # --- cross_cutting_objections: normalize handler dicts ---
             from generators.objection_generator import ObjectionGenerator
             raw_objections = data.get("cross_cutting_objections", [])
@@ -138,6 +141,37 @@ class SummaryGenerator:
                 deal_stage_talking_points=DealStageTalkingPoints(),
                 model_used=self.model,
             )
+
+    @staticmethod
+    def _normalize_comparison_row(row: dict, competitor_name: str) -> dict:
+        """Normalize a comparison table row to match ComparisonRow schema.
+
+        The LLM frequently uses alternative field names like 'kx', 'kdb',
+        'kdb_plus', 'questdb', etc. instead of 'kx_rating'/'competitor_rating'.
+        """
+        # --- kx_rating ---
+        if "kx_rating" not in row:
+            comp_lower = competitor_name.lower().replace(" ", "_")
+            for alt in ("kx", "kdb", "kdb_plus", "kx_assessment",
+                        "kdb_assessment", "kx_score"):
+                if alt in row:
+                    row["kx_rating"] = row.pop(alt)
+                    break
+            else:
+                row["kx_rating"] = ""
+
+        # --- competitor_rating ---
+        if "competitor_rating" not in row:
+            comp_lower = competitor_name.lower().replace(" ", "_")
+            for alt in (comp_lower, "competitor", "competitor_assessment",
+                        "competitor_score", competitor_name.lower()):
+                if alt in row:
+                    row["competitor_rating"] = row.pop(alt)
+                    break
+            else:
+                row["competitor_rating"] = ""
+
+        return row
 
     def _summarize_entries(self, entries: list[CompetitiveEntry]) -> str:
         """Create a compact summary of existing competitive entries for prompt context."""
