@@ -29,15 +29,15 @@ Required keys:
 ## Pipeline Overview
 
 ```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌───────────┐    ┌─────────┐
-│  SCRAPE  │ →  │ PROCESS  │ →  │ GENERATE │ →  │ VECTORIZE │ →  │  QUERY  │
-│          │    │          │    │          │    │           │    │         │
-│ docs     │    │ tag      │    │ compare  │    │ chunk     │    │ search  │
-│ github   │    │ filter   │    │ objection│    │ embed     │    │ filter  │
-│ blog     │    │ dedup    │    │ summary  │    │ store     │    │ retrieve│
-│ community│    │          │    │          │    │           │    │         │
-└──────────┘    └──────────┘    └──────────┘    └───────────┘    └─────────┘
-  raw/ dir       processed/      generated/      data/vectordb/
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌───────────┐    ┌─────────┐    ┌─────────┐
+│  SCRAPE  │ →  │ PROCESS  │ →  │ GENERATE │ →  │ VECTORIZE │ →  │  QUERY  │ →  │  SERVE  │
+│          │    │          │    │          │    │           │    │         │    │         │
+│ docs     │    │ tag      │    │ compare  │    │ chunk     │    │ search  │    │ FastAPI │
+│ github   │    │ filter   │    │ objection│    │ embed     │    │ filter  │    │ RAG Q&A │
+│ blog     │    │ dedup    │    │ summary  │    │ store     │    │ retrieve│    │ web UI  │
+│ community│    │          │    │          │    │           │    │         │    │         │
+└──────────┘    └──────────┘    └──────────┘    └───────────┘    └─────────┘    └─────────┘
+  raw/ dir       processed/      generated/      data/vectordb/                  :8501
 ```
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
@@ -577,3 +577,51 @@ def answer_prospect_question(question: str, competitor: str) -> list[dict]:
 ```
 
 Pass these context chunks to Claude (or any LLM) as RAG context to generate informed competitive responses.
+
+---
+
+## Step 7: Launch the Q&A Web Interface
+
+The pipeline includes a full-featured web application for sales teams to query competitive intelligence interactively. It implements production-grade RAG with:
+
+- **Query analysis** — LLM-powered decomposition, intent classification
+- **HyDE** (Hypothetical Document Embeddings) — generates a hypothetical answer to improve retrieval
+- **Multi-query retrieval** — searches original query + sub-queries + HyDE passage
+- **Reciprocal Rank Fusion** — merges results from multiple search strategies
+- **Chain-of-Thought synthesis** — grounded answer generation with inline `[N]` citations
+- **Follow-up suggestions** — auto-generated continuation questions
+
+### Launch
+
+```bash
+# Start the web server
+python pipeline.py serve --port 8501
+
+# With auto-reload during development
+python pipeline.py serve --port 8501 --reload
+```
+
+Open `http://localhost:8501` in your browser.
+
+### Features
+
+- **Query input** with real-time filters (competitor, topic, source type)
+- **Grounded answers** with inline `[N]` citation badges
+- **Source citations panel** — full provenance for every claim (URL, source type, credibility)
+- **Query metadata** — timing breakdown, model info, retrieval stats
+- **Follow-up questions** — click to continue the investigation
+- **Settings modal** — switch LLM provider/model, update API keys at runtime
+- **Example queries** — pre-loaded starter questions
+
+### Configuration
+
+The web interface reads API keys from `.env` on startup. You can also update keys at runtime via the Settings modal (gear icon). These settings are session-scoped and reset on restart.
+
+Supported LLM providers:
+
+| Provider | Models | API Key |
+|----------|--------|---------|
+| Anthropic (default) | Claude Sonnet 4, Claude Opus 4, Claude Haiku 4.5 | `ANTHROPIC_API_KEY` |
+| OpenAI | GPT-4o, GPT-4o Mini, GPT-4.1 | `OPENAI_API_KEY` |
+
+OpenAI key is always required for embeddings regardless of which LLM provider you choose for answer generation.
