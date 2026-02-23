@@ -125,6 +125,9 @@ class ComparisonGenerator:
                 topic_id, topic_name, competitor_name, f"JSON parse error: {e}"
             )
 
+        # Normalize LLM response to match our schema before validation
+        data = self._normalize_response(data)
+
         # Build CompetitiveEntry from parsed data
         try:
             entry = CompetitiveEntry(
@@ -274,6 +277,110 @@ class ComparisonGenerator:
             return match.group(0)
 
         return text
+
+    def _normalize_response(self, data: dict) -> dict:
+        """Normalize common LLM response deviations to match our Pydantic schema.
+
+        Handles cases where the LLM returns slightly different structures, e.g.:
+        - competitor_limitations as a dict grouped by category instead of a flat list
+        - kx_differentiators as strings instead of objects
+        - elevator_pitch as a string instead of an object
+        - competitor_assessment as a string instead of an object
+        - competitor_limitations items using 'category' instead of 'evidence_type'
+        """
+        # --- competitor_assessment ---
+        ca = data.get("competitor_assessment")
+        if isinstance(ca, str):
+            data["competitor_assessment"] = {
+                "summary": ca, "strengths": [], "details": ca, "citations": []
+            }
+        elif isinstance(ca, dict):
+            if "details" not in ca:
+                ca["details"] = ca.get("summary", "")
+            if "summary" not in ca:
+                ca["summary"] = ca.get("details", "")
+
+        # --- competitor_limitations: flatten grouped dict to list ---
+        cl = data.get("competitor_limitations")
+        if isinstance(cl, dict):
+            flat = []
+            for category, items in cl.items():
+                if isinstance(items, list):
+                    for item in items:
+                        if isinstance(item, str):
+                            flat.append({
+                                "limitation": item,
+                                "evidence_type": category,
+                                "details": item,
+                            })
+                        elif isinstance(item, dict):
+                            item.setdefault("evidence_type", category)
+                            flat.append(item)
+            data["competitor_limitations"] = flat
+        elif isinstance(cl, list):
+            normalized = []
+            for item in cl:
+                if isinstance(item, str):
+                    normalized.append({
+                        "limitation": item,
+                        "evidence_type": "inferred",
+                        "details": item,
+                    })
+                elif isinstance(item, dict):
+                    # Map 'category' -> 'evidence_type' if needed
+                    if "evidence_type" not in item and "category" in item:
+                        item["evidence_type"] = item.pop("category")
+                    item.setdefault("evidence_type", "inferred")
+                    item.setdefault("details", item.get("limitation", ""))
+                    normalized.append(item)
+            data["competitor_limitations"] = normalized
+
+        # --- kx_differentiators: convert strings to objects ---
+        kd = data.get("kx_differentiators")
+        if isinstance(kd, str):
+            kd = [kd]
+            data["kx_differentiators"] = kd
+        if isinstance(kd, list):
+            normalized = []
+            for item in kd:
+                if isinstance(item, str):
+                    normalized.append({
+                        "differentiator": item,
+                        "explanation": item,
+                        "evidence": "",
+                    })
+                elif isinstance(item, dict):
+                    item.setdefault("differentiator", item.get("explanation", ""))
+                    item.setdefault("explanation", item.get("differentiator", ""))
+                    item.setdefault("evidence", "")
+                    normalized.append(item)
+            data["kx_differentiators"] = normalized
+
+        # --- elevator_pitch: convert string to object ---
+        ep = data.get("elevator_pitch")
+        if isinstance(ep, str):
+            data["elevator_pitch"] = {"pitch": ep, "key_stat": None}
+        elif isinstance(ep, dict):
+            ep.setdefault("pitch", "")
+
+        # --- objection_handlers: convert strings to objects ---
+        oh = data.get("objection_handlers")
+        if isinstance(oh, list):
+            normalized = []
+            for item in oh:
+                if isinstance(item, str):
+                    normalized.append({
+                        "objection": item,
+                        "response": "",
+                        "supporting_evidence": [],
+                    })
+                elif isinstance(item, dict):
+                    item.setdefault("objection", "")
+                    item.setdefault("response", "")
+                    normalized.append(item)
+            data["objection_handlers"] = normalized
+
+        return data
 
     def _empty_entry(
         self, topic_id: str, topic_name: str, competitor: str, error: str

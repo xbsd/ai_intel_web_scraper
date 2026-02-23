@@ -42,22 +42,15 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
-> **Sample raw data ships with the repo.** Scraped data for KX and QuestDB is checked into
-> git so you can explore the pipeline immediately after cloning. The vector database
-> (ChromaDB) is **not** included — run `python pipeline.py vectorize --target all` to build it.
-> Re-scrape to get the full, latest dataset, or to add a new competitor.
+> **Data is not checked into git.** After cloning, run the scrape and vectorize steps
+> below to populate the pipeline. The directory structure (`data/raw/`, `data/vectordb/`, etc.)
+> is preserved via `.gitkeep` files.
 
 ---
 
 ## Step 1: Scrape Data
 
-Sample data for KX (~1100 records) and QuestDB (~530 records) ships with the repo. You can verify immediately after cloning:
-
-```bash
-python pipeline.py status
-```
-
-To **refresh** existing data or **add a new competitor**, scrape the target. **Always scrape KX first** if starting from scratch — it is the baseline knowledge base shared across all competitor comparisons.
+After cloning, scrape the targets you need. **Always scrape KX first** — it is the baseline knowledge base shared across all competitor comparisons.
 
 ```bash
 # Re-scrape KX to get latest data
@@ -454,25 +447,24 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ## Data Storage and Git
 
-Sample **raw** scraped data ships with the repo so you can explore the pipeline immediately. The vector database does **not** ship — you build it yourself with `vectorize`. After cloning:
+All data directories are **gitignored** — only `.gitkeep` placeholder files are tracked so the directory structure is preserved on clone. After cloning:
 
 ```
 data/
-├── raw/           # Sample KX + QuestDB scraped data included
+├── raw/           # Empty — populated by `scrape`
 ├── processed/     # Empty — populated by `process`
 ├── generated/     # Empty — populated by `generate`
 ├── reviewed/      # Empty — populated manually after SE review
-└── vectordb/      # Empty (gitignored) — populated by `vectorize`
+└── vectordb/      # Empty — populated by `vectorize`
 ```
 
-After cloning, the quickest path to a working vector store:
+After cloning, build the full dataset:
 
 ```bash
-python pipeline.py vectorize --target all    # builds ChromaDB from the sample raw data
+python pipeline.py scrape --target all       # collect raw data
+python pipeline.py vectorize --target all    # build ChromaDB
 python pipeline.py vector-query "kdb performance"  # verify it works
 ```
-
-Re-scrape targets to get the full, latest dataset. If raw data grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
 
 ### Data volumes after a full run
 

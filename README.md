@@ -8,9 +8,8 @@ KX is the constant. Competitors are pluggable. The KX knowledge base is scraped 
 
 ## Quick Start
 
-> **Note:** Sample raw data for KX and QuestDB ships with the repo so you can explore
-> the pipeline immediately after cloning. Run `vectorize` to build the vector database,
-> then re-scrape to get the full, latest dataset. See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
+> **Note:** Raw data and the vector database are **not** checked into git — they are
+> regenerated locally via the pipeline. See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
 
 ```bash
 cd competitive-intel
@@ -22,7 +21,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your API keys (GITHUB_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY)
 
-# 3. Scrape data (sample data ships with repo; re-scrape for full latest dataset)
+# 3. Scrape data
 python pipeline.py scrape --target kx       # Always scrape KX first
 python pipeline.py scrape --target questdb
 
@@ -32,8 +31,8 @@ python pipeline.py process --target all
 # 5. Generate competitive intelligence
 python pipeline.py generate --competitor questdb
 
-# 6. Export for SE review
-python pipeline.py export --competitor questdb
+# 6. Vectorize (chunk, embed, store in ChromaDB)
+python pipeline.py vectorize --target all
 
 # 7. Launch the Q&A web interface
 python pipeline.py serve --port 8501
@@ -42,6 +41,27 @@ python pipeline.py serve --port 8501
 # Check status at any time
 python pipeline.py status
 ```
+
+## Web Application (Q&A Interface)
+
+The pipeline includes a **production-grade RAG web application** built with FastAPI for sales teams to query competitive intelligence interactively.
+
+```bash
+python pipeline.py serve --port 8501
+# Open http://localhost:8501
+```
+
+**Capabilities:**
+- Natural-language Q&A over all scraped competitive data
+- Query analysis with LLM-powered intent classification
+- HyDE (Hypothetical Document Embeddings) for improved retrieval
+- Multi-query retrieval with Reciprocal Rank Fusion
+- Grounded answers with inline `[N]` citation badges linking to source URLs
+- Filters by competitor, topic, and source type
+- Follow-up question suggestions
+- Settings modal to switch LLM provider/model at runtime (Anthropic or OpenAI)
+
+See the [RUNBOOK — Step 7](competitive-intel/RUNBOOK.md#step-7-launch-the-qa-web-interface) for full configuration details.
 
 ## Adding a New Competitor
 
@@ -86,12 +106,12 @@ competitive-intel/
 │   ├── templates/             # HTML templates
 │   └── static/                # CSS design system + JS frontend
 ├── schemas/                   # Pydantic data models
-├── data/                      # Pipeline data (sample raw data checked into git)
-│   ├── raw/                   # Scraped data (KX + QuestDB samples included)
+├── data/                      # Pipeline data (all gitignored — regenerate locally)
+│   ├── raw/                   # Scraped data (run `scrape` to populate)
 │   ├── processed/             # Tagged, filtered, deduplicated
 │   ├── generated/             # LLM-generated content
 │   ├── reviewed/              # Human-approved final content
-│   └── vectordb/              # ChromaDB (gitignored — run `vectorize` to build)
+│   └── vectordb/              # ChromaDB (run `vectorize` to build)
 ├── pipeline.py                # Main orchestrator
 ├── dry_run.py                 # Test vectorization on a small sample
 ├── RUNBOOK.md                 # Full end-to-end operating guide
