@@ -42,41 +42,40 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
-> **Important: Fresh clone = empty data.**
-> The `data/` directory is gitignored (scraped data is large and regeneratable).
-> After cloning the repo, `python pipeline.py status` will show **0 records for everything**.
-> You must run the scrape step below to populate it. This is expected.
+> **Data is included in the repo.** Scraped data for KX and QuestDB (~20 MB) is checked
+> into git, so `python pipeline.py status` shows records immediately after cloning.
+> You only need to re-scrape to refresh data or to add a new competitor.
 
 ---
 
 ## Step 1: Scrape Data
 
-After a fresh clone, you need to scrape all targets. **Always scrape KX first** — it is the baseline knowledge base shared across all competitor comparisons.
+Data for KX (~1100 records) and QuestDB (~530 records) is already included in the repo. You can verify immediately after cloning:
 
 ```bash
-# 1. Scrape KX first (our own product — the constant baseline)
-python pipeline.py scrape --target kx
-
-# 2. Then scrape competitors
-python pipeline.py scrape --target questdb
-python pipeline.py scrape --target clickhouse
-
-# Or scrape everything in one go (KX + all competitors)
-python pipeline.py scrape --target all
-
-# 3. Verify data was collected
 python pipeline.py status
 ```
 
-Expected output after scraping (approximate — varies as source sites change):
+To **refresh** existing data or **add a new competitor**, scrape the target. **Always scrape KX first** if starting from scratch — it is the baseline knowledge base shared across all competitor comparisons.
 
-```
-Target: kx          Raw: ~1100 records (33 files)
-Target: questdb     Raw: ~530 records  (8 files)
-Target: clickhouse  Raw: varies        (depends on max_pages config)
+```bash
+# Re-scrape KX to get latest data
+python pipeline.py scrape --target kx
+
+# Re-scrape a competitor
+python pipeline.py scrape --target questdb
+
+# Scrape a new competitor (after creating its config)
+python pipeline.py scrape --target clickhouse
+
+# Or scrape everything in one go
+python pipeline.py scrape --target all
+
+# Verify data was collected
+python pipeline.py status
 ```
 
-If you see 0 records after scraping, check:
+If scraping returns 0 records, check:
 - Is your `.env` populated? (`GITHUB_TOKEN` is needed for GitHub sources)
 - Are you in the `competitive-intel/` directory?
 - Check `pipeline.log` for errors: `tail -50 pipeline.log`
@@ -454,20 +453,20 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ## Data Storage and Git
 
-The `data/` directory is **gitignored**. After a fresh clone, all data directories are empty:
+The `data/` directory is **checked into git** (~20 MB). After cloning, you have:
 
 ```
 data/
-├── raw/           # Empty — populated by `scrape`
-├── processed/     # Empty — populated by `process`
-├── generated/     # Empty — populated by `generate`
-├── reviewed/      # Empty — populated manually after SE review
-└── vectordb/      # Empty — populated by `vectorize`
+├── raw/           # KX + QuestDB scraped data included
+├── processed/     # Populated by `process`
+├── generated/     # Populated by `generate`
+├── reviewed/      # Populated manually after SE review
+└── vectordb/      # KX vectors included (from dry-run)
 ```
 
-This is by design — scraped data is large (hundreds of MB) and fully regeneratable from the pipeline. **You must run the pipeline from Step 1 (scrape) after every fresh clone.**
+If the data directory grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
 
-### Expected data volumes after a full run
+### Data volumes after a full run
 
 | Target | Raw Records | Raw Files | Vector Chunks | Notes |
 |--------|------------|-----------|---------------|-------|
@@ -475,7 +474,7 @@ This is by design — scraped data is large (hundreds of MB) and fully regenerat
 | QuestDB | ~530 | ~8 | ~5,000+ | Primary competitor |
 | ClickHouse | ~500+ | varies | ~5,000+ | Config ready, scrape to populate |
 
-To build the full vector database from scratch:
+To rebuild the full vector database (e.g. after re-scraping):
 
 ```bash
 python pipeline.py scrape --target all        # ~5-15 min depending on rate limits
@@ -508,9 +507,9 @@ python dry_run.py --max-records 50 --timeout 120
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `status` shows 0 records everywhere | Fresh clone — `data/` is gitignored | Run `python pipeline.py scrape --target all` first |
+| `status` shows 0 records after scraping | `.env` not configured or network issue | Check `GITHUB_TOKEN` in `.env`, check `pipeline.log` |
 | `vector-status` shows 0 vectors | Haven't vectorized yet | Run `python pipeline.py vectorize --target all` |
-| `vector-query` returns no results | No data in vector store | Scrape first, then vectorize |
+| `vector-query` returns no results | No data in vector store | Run vectorize first |
 | Embedding step fails silently | `OPENAI_API_KEY` not set | Add to `.env` |
 | GitHub scraping returns 403 | `GITHUB_TOKEN` not set or expired | Regenerate token |
 | Reddit scraping returns 403 | Reddit blocks unauthenticated API | Expected — HN data still works |

@@ -4,17 +4,17 @@
 venv/
 env/
 
-# Data directories (large, regeneratable)
-data/raw/*
-data/processed/*
-data/generated/*
-data/reviewed/*
-data/vectordb/
-# Keep directory structure
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/generated/.gitkeep
-!data/reviewed/.gitkeep
+# Data directories — checked in so fresh clones have data ready to use.
+# Total size is ~20 MB which is well within git limits.
+# If data grows significantly (>500 MB), consider re-adding these ignores
+# and using Git LFS or a separate data download step instead.
+#
+# Uncomment these lines to stop tracking data:
+# data/raw/*
+# data/processed/*
+# data/generated/*
+# data/reviewed/*
+# data/vectordb/
 
 # Python
 __pycache__/
