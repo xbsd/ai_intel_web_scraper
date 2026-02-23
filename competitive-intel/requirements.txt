@@ -12,9 +12,10 @@ html2text>=2020.1.16
 # LLM generation
 anthropic>=0.40.0
 
-# Embeddings (Anthropic-compatible via Voyager or local)
-# For Anthropic embedding usage, use the anthropic SDK directly
-# sentence-transformers>=2.0.0  # Optional: local embeddings
+# Embeddings & Vector Store
+openai>=1.30.0
+tiktoken>=0.7.0
+chromadb>=0.5.0
 
 # Utilities
 python-dotenv>=1.0.0
