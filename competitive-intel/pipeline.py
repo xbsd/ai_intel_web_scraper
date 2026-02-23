@@ -12,6 +12,11 @@ Usage:
   python pipeline.py generate --competitor questdb       # Generate all topics
   python pipeline.py generate --competitor questdb --topic high_availability
 
+  python pipeline.py vectorize --target all              # Chunk + embed + store
+  python pipeline.py vectorize --target questdb --reset  # Wipe & re-ingest
+  python pipeline.py vector-status                       # ChromaDB stats
+  python pipeline.py vector-query "QuestDB HA"           # Test query
+
   python pipeline.py status                              # Show pipeline status
   python pipeline.py export --competitor questdb          # Export for review
 """
@@ -496,6 +501,90 @@ def cmd_export(args):
 
 
 # ---------------------------------------------------------------------------
+# VECTORIZE
+# ---------------------------------------------------------------------------
+
+def cmd_vectorize(args):
+    """Run the vectorization pipeline (chunk → embed → store in ChromaDB)."""
+    from vectorstore.ingest import ingest_all
+
+    targets = None if args.target == "all" else [args.target]
+    ingest_all(
+        targets=targets,
+        reset=args.reset,
+        chunk_tokens=args.chunk_tokens,
+        overlap_tokens=args.overlap_tokens,
+    )
+
+
+def cmd_vector_status(args):
+    """Show vector store statistics."""
+    from vectorstore.store import VectorStore
+
+    store = VectorStore()
+    stats = store.get_stats()
+
+    print("\n" + "=" * 70)
+    print("VECTOR STORE STATUS")
+    print("=" * 70)
+
+    for name, info in stats.items():
+        count = info.get("count", 0)
+        print(f"\n  Collection: {name}")
+        print(f"    Vectors stored: {count}")
+        keys = info.get("sample_metadata_keys", [])
+        if keys:
+            print(f"    Metadata fields: {', '.join(keys)}")
+
+    print("\n" + "=" * 70)
+
+
+def cmd_vector_query(args):
+    """Run a test query against the vector store."""
+    from vectorstore.store import VectorStore
+    from vectorstore.embedder import Embedder
+
+    store = VectorStore()
+    embedder = Embedder()
+
+    where = {}
+    if args.competitor:
+        where["competitor"] = args.competitor
+    if args.topic:
+        where["primary_topic"] = args.topic
+
+    results = store.query_by_text(
+        query_text=args.query,
+        embedder=embedder,
+        n_results=args.top_k,
+        where=where if where else None,
+    )
+
+    print(f"\nQuery: \"{args.query}\"")
+    if where:
+        print(f"Filters: {where}")
+    print(f"Results: {len(results['ids'][0])}")
+    print("-" * 50)
+
+    for i, (doc_id, doc, meta, dist) in enumerate(
+        zip(
+            results["ids"][0],
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0],
+        )
+    ):
+        print(f"\n[{i+1}] Score: {1 - dist:.4f} | {meta.get('competitor', '?')} | {meta.get('source_type', '?')}")
+        print(f"    Topic: {meta.get('primary_topic', '?')}")
+        print(f"    Source: {meta.get('source_title', '?')}")
+        print(f"    URL: {meta.get('source_url', '?')}")
+        # Show first 200 chars of the document
+        preview = doc[:200].replace("\n", " ")
+        print(f"    Text: {preview}...")
+        print()
+
+
+# ---------------------------------------------------------------------------
 # MAIN
 # ---------------------------------------------------------------------------
 
@@ -547,6 +636,43 @@ def main():
         help="Competitor short name",
     )
 
+    # Vectorize
+    vec_parser = subparsers.add_parser(
+        "vectorize", help="Chunk, embed, and store data in ChromaDB"
+    )
+    vec_parser.add_argument(
+        "--target",
+        required=True,
+        help="Competitor short name or 'all'",
+    )
+    vec_parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Wipe existing vector store before ingesting",
+    )
+    vec_parser.add_argument(
+        "--chunk-tokens",
+        type=int,
+        default=400,
+        help="Target chunk size in tokens (default: 400)",
+    )
+    vec_parser.add_argument(
+        "--overlap-tokens",
+        type=int,
+        default=60,
+        help="Token overlap between chunks (default: 60)",
+    )
+
+    # Vector status
+    subparsers.add_parser("vector-status", help="Show vector store statistics")
+
+    # Vector query (test)
+    vq_parser = subparsers.add_parser("vector-query", help="Test query against vector store")
+    vq_parser.add_argument("query", help="Query text")
+    vq_parser.add_argument("--competitor", default=None, help="Filter by competitor")
+    vq_parser.add_argument("--topic", default=None, help="Filter by topic ID")
+    vq_parser.add_argument("--top-k", type=int, default=5, help="Number of results")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -559,6 +685,9 @@ def main():
         "generate": cmd_generate,
         "status": cmd_status,
         "export": cmd_export,
+        "vectorize": cmd_vectorize,
+        "vector-status": cmd_vector_status,
+        "vector-query": cmd_vector_query,
     }
 
     try:
