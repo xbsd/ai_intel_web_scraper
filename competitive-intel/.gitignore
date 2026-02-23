@@ -4,7 +4,7 @@
 venv/
 env/
 
-# Data directories — checked in so fresh clones have data ready to use.
+# Data directories — sample data checked in so fresh clones can explore the pipeline.
 # Total size is ~20 MB which is well within git limits.
 # If data grows significantly (>500 MB), consider re-adding these ignores
 # and using Git LFS or a separate data download step instead.

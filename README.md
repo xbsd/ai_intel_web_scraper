@@ -8,8 +8,9 @@ KX is the constant. Competitors are pluggable. The KX knowledge base is scraped 
 
 ## Quick Start
 
-> **Note:** Scraped data for KX and QuestDB (~20 MB) is included in the repo, so
-> `pipeline.py status` works immediately after cloning. See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
+> **Note:** Sample scraped data for KX and QuestDB (~20 MB) ships with the repo so you
+> can explore the pipeline immediately after cloning. Re-scrape to get the full, latest dataset.
+> See [RUNBOOK.md](competitive-intel/RUNBOOK.md) for the full walkthrough.
 
 ```bash
 cd competitive-intel
@@ -21,7 +22,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your API keys (GITHUB_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY)
 
-# 3. Scrape data (KX + QuestDB data already included, re-scrape to refresh)
+# 3. Scrape data (sample data ships with repo; re-scrape for full latest dataset)
 python pipeline.py scrape --target kx       # Always scrape KX first
 python pipeline.py scrape --target questdb
 
@@ -73,8 +74,8 @@ competitive-intel/
 │   ├── summary_generator.py    # Positioning narratives
 │   └── prompts/               # Prompt templates
 ├── schemas/                   # Pydantic data models
-├── data/                      # Pipeline data (~20 MB, checked into git)
-│   ├── raw/                   # Scraped data (KX + QuestDB included)
+├── data/                      # Pipeline data (~20 MB sample checked into git)
+│   ├── raw/                   # Scraped data (KX + QuestDB samples included)
 │   ├── processed/             # Tagged, filtered, deduplicated
 │   ├── generated/             # LLM-generated content
 │   └── reviewed/              # Human-approved final content

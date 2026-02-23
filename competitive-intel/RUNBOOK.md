@@ -42,15 +42,15 @@ Required keys:
 
 Each stage is independent. You can re-run any stage without re-running earlier ones (the data is persisted to disk between stages).
 
-> **Data is included in the repo.** Scraped data for KX and QuestDB (~20 MB) is checked
-> into git, so `python pipeline.py status` shows records immediately after cloning.
-> You only need to re-scrape to refresh data or to add a new competitor.
+> **Sample data ships with the repo.** A snapshot of scraped data for KX and QuestDB (~20 MB)
+> is checked into git so you can explore the pipeline immediately after cloning.
+> Re-scrape to get the full, latest dataset, or to add a new competitor.
 
 ---
 
 ## Step 1: Scrape Data
 
-Data for KX (~1100 records) and QuestDB (~530 records) is already included in the repo. You can verify immediately after cloning:
+Sample data for KX (~1100 records) and QuestDB (~530 records) ships with the repo. You can verify immediately after cloning:
 
 ```bash
 python pipeline.py status
@@ -453,18 +453,18 @@ python pipeline.py vector-query "SQL support" --competitor timescaledb --top-k 3
 
 ## Data Storage and Git
 
-The `data/` directory is **checked into git** (~20 MB). After cloning, you have:
+A **sample** of scraped data (~20 MB) is checked into git so the pipeline works out of the box. After cloning, you have:
 
 ```
 data/
-├── raw/           # KX + QuestDB scraped data included
+├── raw/           # Sample KX + QuestDB scraped data included
 ├── processed/     # Populated by `process`
 ├── generated/     # Populated by `generate`
 ├── reviewed/      # Populated manually after SE review
-└── vectordb/      # KX vectors included (from dry-run)
+└── vectordb/      # Sample KX vectors included (from dry-run)
 ```
 
-If the data directory grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
+Re-scrape targets to get the full, latest dataset. If the data directory grows significantly (>500 MB after adding many competitors), consider re-enabling the gitignore rules in `.gitignore` and using Git LFS or a separate data download step.
 
 ### Data volumes after a full run
 
