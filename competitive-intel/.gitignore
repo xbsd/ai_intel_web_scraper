@@ -4,15 +4,16 @@
 venv/
 env/
 
-# Sample raw data is checked in so fresh clones can explore the pipeline (~8 MB).
-# If data grows significantly (>500 MB), consider re-adding these ignores
-# and using Git LFS or a separate data download step instead.
-#
-# Uncomment these lines to stop tracking raw data:
-# data/raw/*
-# data/processed/*
-# data/generated/*
-# data/reviewed/*
+# Raw/processed data is gitignored — regenerate locally via the pipeline.
+# The vectordb is also gitignored (binary, regeneratable).
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/generated/*
+!data/generated/.gitkeep
+data/reviewed/*
+!data/reviewed/.gitkeep
 
 # Vector database — always gitignored (binary, regeneratable).
 # Run `python pipeline.py vectorize --target all` after cloning.
