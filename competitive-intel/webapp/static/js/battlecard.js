@@ -2,7 +2,7 @@
  * Battle Card Generator — Frontend Module
  *
  * Handles the Battle Cards tab: form management, SSE-streamed generation,
- * report preview in iframe, and PDF export.
+ * client name disambiguation, report preview in iframe, and multi-mode PDF export.
  */
 
 (function () {
@@ -12,7 +12,9 @@
   const $$ = (sel) => document.querySelectorAll(sel);
 
   let currentReport = null; // holds the last generated BattleCardReport
-  let currentReportHtml = null; // holds the rendered HTML string
+  let currentReportHtml = null; // holds the rendered HTML string (combined mode)
+  let confirmedClient = null; // holds the confirmed ClientMatch object
+  let lookupTimer = null; // debounce timer for client name lookup
 
   // ── Initialize ──
   document.addEventListener("DOMContentLoaded", () => {
@@ -27,8 +29,48 @@
     const previewBtn = $("#bc-btn-preview-html");
     if (previewBtn) previewBtn.addEventListener("click", previewHtmlInNewTab);
 
-    const pdfBtn = $("#bc-btn-export-pdf");
-    if (pdfBtn) pdfBtn.addEventListener("click", exportPdf);
+    // Client name disambiguation
+    const clientInput = $("#bc-client-name");
+    if (clientInput) {
+      clientInput.addEventListener("input", onClientNameInput);
+      clientInput.addEventListener("focus", onClientNameInput);
+    }
+
+    const changeBtn = $("#bc-client-change-btn");
+    if (changeBtn) changeBtn.addEventListener("click", clearConfirmedClient);
+
+    // Export dropdown
+    const exportTrigger = $("#bc-export-trigger");
+    if (exportTrigger) exportTrigger.addEventListener("click", toggleExportDropdown);
+
+    // Export options
+    const exportOptions = $$(".bc-export-option");
+    exportOptions.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        hideExportDropdown();
+        exportPdf(mode);
+      });
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener("click", (e) => {
+      const dropdown = $("#bc-export-dropdown");
+      const trigger = $("#bc-export-trigger");
+      if (dropdown && dropdown.style.display !== "none") {
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+          hideExportDropdown();
+        }
+      }
+      // Also close client lookup dropdown on outside click
+      const lookupDd = $("#bc-client-lookup-dropdown");
+      const lookupWrap = $(".bc-client-lookup-wrap");
+      if (lookupDd && lookupDd.style.display !== "none") {
+        if (lookupWrap && !lookupWrap.contains(e.target)) {
+          lookupDd.style.display = "none";
+        }
+      }
+    });
   }
 
   // ── Load competitors for the multi-select ──
@@ -63,7 +105,145 @@
     }
   }
 
-  // ── Generate Battle Card ──
+  // ═══════════════════════════════════════════════════════════════
+  // Client Name Disambiguation
+  // ═══════════════════════════════════════════════════════════════
+
+  function onClientNameInput() {
+    const input = $("#bc-client-name");
+    if (!input) return;
+
+    const query = input.value.trim();
+    if (query.length < 2) {
+      hideClientDropdown();
+      return;
+    }
+
+    // If client is already confirmed with this name, skip
+    if (confirmedClient && confirmedClient.name === query) return;
+
+    // Debounce: wait 600ms after typing stops
+    clearTimeout(lookupTimer);
+    lookupTimer = setTimeout(() => lookupClientName(query), 600);
+  }
+
+  async function lookupClientName(query) {
+    const spinner = $("#bc-client-lookup-spinner");
+    const dropdown = $("#bc-client-lookup-dropdown");
+    if (!dropdown) return;
+
+    if (spinner) spinner.style.display = "";
+
+    try {
+      const res = await fetch("/api/battlecard/client-lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!res.ok) throw new Error("Lookup failed");
+      const data = await res.json();
+      const matches = data.matches || [];
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = '<div class="bc-lookup-empty">No matches found — name will be used as entered</div>';
+        dropdown.style.display = "";
+        return;
+      }
+
+      dropdown.innerHTML = matches.map((m, idx) => `
+        <button class="bc-lookup-match" data-idx="${idx}" type="button">
+          <div class="bc-lookup-match__name">${escapeHtml(m.name)}</div>
+          <div class="bc-lookup-match__desc">${escapeHtml(m.description || "")}</div>
+          <div class="bc-lookup-match__meta">
+            ${m.industry ? `<span>${escapeHtml(m.industry)}</span>` : ""}
+            ${m.headquarters ? `<span>${escapeHtml(m.headquarters)}</span>` : ""}
+            ${m.ticker ? `<span>${escapeHtml(m.ticker)}</span>` : ""}
+            ${m.employees ? `<span>${escapeHtml(m.employees)} employees</span>` : ""}
+          </div>
+          ${m.relevance ? `<div class="bc-lookup-match__relevance">${escapeHtml(m.relevance)}</div>` : ""}
+        </button>
+      `).join("");
+
+      // Add "Use as entered" option
+      dropdown.innerHTML += `
+        <button class="bc-lookup-match bc-lookup-match--custom" data-idx="-1" type="button">
+          <div class="bc-lookup-match__name">Use "${escapeHtml(query)}" as entered</div>
+          <div class="bc-lookup-match__desc">Skip disambiguation and use the exact name</div>
+        </button>
+      `;
+
+      dropdown.style.display = "";
+
+      // Bind click handlers
+      dropdown.querySelectorAll(".bc-lookup-match").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.idx, 10);
+          if (idx >= 0 && matches[idx]) {
+            selectClient(matches[idx]);
+          } else {
+            selectClient({ name: query, description: "", industry: "", headquarters: "", ticker: "", employees: "", relevance: "", logo_url: "" });
+          }
+          dropdown.style.display = "none";
+        });
+      });
+
+      // Store matches for access
+      dropdown._matches = matches;
+
+    } catch (e) {
+      dropdown.innerHTML = `<div class="bc-lookup-empty" style="color:var(--negative)">Lookup failed — name will be used as entered</div>`;
+      dropdown.style.display = "";
+    } finally {
+      if (spinner) spinner.style.display = "none";
+    }
+  }
+
+  function selectClient(match) {
+    confirmedClient = match;
+
+    const input = $("#bc-client-name");
+    const confirmed = $("#bc-client-confirmed");
+    const nameEl = $("#bc-client-confirmed-name");
+    const detailEl = $("#bc-client-confirmed-detail");
+
+    if (input) {
+      input.value = match.name;
+      input.style.display = "none";
+    }
+
+    if (nameEl) nameEl.textContent = match.name;
+    if (detailEl) {
+      const parts = [match.industry, match.headquarters, match.ticker].filter(Boolean);
+      detailEl.textContent = parts.join(" | ");
+    }
+    if (confirmed) confirmed.style.display = "";
+
+    hideClientDropdown();
+  }
+
+  function clearConfirmedClient() {
+    confirmedClient = null;
+    const input = $("#bc-client-name");
+    const confirmed = $("#bc-client-confirmed");
+    if (input) {
+      input.style.display = "";
+      input.focus();
+    }
+    if (confirmed) confirmed.style.display = "none";
+  }
+
+  function hideClientDropdown() {
+    const dropdown = $("#bc-client-lookup-dropdown");
+    if (dropdown) dropdown.style.display = "none";
+    const spinner = $("#bc-client-lookup-spinner");
+    if (spinner) spinner.style.display = "none";
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Battle Card Generation
+  // ═══════════════════════════════════════════════════════════════
+
   async function generateBattleCard() {
     const btn = $("#bc-btn-generate");
     if (!btn || btn.disabled) return;
@@ -86,6 +266,7 @@
       client_industry: ($("#bc-industry") || {}).value || "",
       use_case: ($("#bc-use-case") || {}).value || "general",
       competitors: competitors,
+      confirmed_client: confirmedClient || null,
       include_chat_context: ($("#bc-include-chat") || {}).checked || false,
       session_id: window.__appState ? window.__appState.sessionId : null,
       call_notes: ($("#bc-call-notes") || {}).value || "",
@@ -206,11 +387,12 @@
   // ── Render Report ──
   async function renderReport(reportData) {
     try {
-      // Send report data to backend for HTML rendering
+      // Send report data to backend for HTML rendering (combined mode)
+      const payload = { ...reportData, export_mode: "combined" };
       const res = await fetch("/api/battlecard/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reportData),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to render report");
@@ -244,7 +426,25 @@
     }
   }
 
-  // ── Preview / Export ──
+  // ═══════════════════════════════════════════════════════════════
+  // Export — 3 modes
+  // ═══════════════════════════════════════════════════════════════
+
+  function toggleExportDropdown() {
+    const dropdown = $("#bc-export-dropdown");
+    if (!dropdown) return;
+    if (!currentReport) {
+      showToast("No report generated yet", "error");
+      return;
+    }
+    dropdown.style.display = dropdown.style.display === "none" ? "" : "none";
+  }
+
+  function hideExportDropdown() {
+    const dropdown = $("#bc-export-dropdown");
+    if (dropdown) dropdown.style.display = "none";
+  }
+
   function previewHtmlInNewTab() {
     if (!currentReportHtml) {
       showToast("No report generated yet", "error");
@@ -253,29 +453,51 @@
     const blob = new Blob([currentReportHtml], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
-    // Clean up after a delay
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
-  function exportPdf() {
-    if (!currentReportHtml) {
+  async function exportPdf(mode) {
+    if (!currentReport) {
       showToast("No report generated yet", "error");
       return;
     }
 
-    // Open the HTML in a new window and trigger print
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      showToast("Popup blocked — please allow popups for PDF export", "error");
-      return;
-    }
-    printWindow.document.write(currentReportHtml);
-    printWindow.document.close();
-    printWindow.onload = function () {
-      setTimeout(() => {
-        printWindow.print();
-      }, 500);
+    const modeLabels = {
+      client_tearsheet: "Client Tear Sheet",
+      sales_confidential: "Sales Confidential",
+      combined: "Combined KX Battle Card",
     };
+
+    showToast(`Preparing ${modeLabels[mode] || "export"}...`, "info");
+
+    try {
+      // Request rendered HTML for the specific mode
+      const payload = { ...currentReport, export_mode: mode };
+      const res = await fetch("/api/battlecard/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to render export");
+      const exportHtml = await res.text();
+
+      // Open in new window and trigger print
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        showToast("Popup blocked — please allow popups for PDF export", "error");
+        return;
+      }
+      printWindow.document.write(exportHtml);
+      printWindow.document.close();
+      printWindow.onload = function () {
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      };
+    } catch (e) {
+      showToast("Export failed: " + e.message, "error");
+    }
   }
 
   // ── Utilities ──

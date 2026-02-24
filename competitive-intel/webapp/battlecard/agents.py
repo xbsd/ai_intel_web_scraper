@@ -26,6 +26,181 @@ class AgentResult:
     error: Optional[str] = None
 
 
+# ---------------------------------------------------------------------------
+# Client Name Disambiguation
+# ---------------------------------------------------------------------------
+
+
+def lookup_client(query: str) -> list[dict]:
+    """Look up a client name and return potential company matches.
+
+    Uses Claude with web search to disambiguate company names and return
+    structured information about matching companies.
+    """
+    import anthropic
+
+    client = anthropic.Anthropic()
+
+    prompt = f"""I need to identify which company the user means by "{query}".
+
+This is for a competitive intelligence platform focused on capital markets,
+investment banking, quantitative finance, and database technology.
+
+Search for companies matching "{query}" and return the top 3-5 most likely matches.
+
+Return as JSON:
+{{
+  "matches": [
+    {{
+      "name": "Full Official Company Name",
+      "description": "One-line company description",
+      "industry": "Industry classification (e.g. Tier 1 Investment Bank, Hedge Fund, Exchange)",
+      "headquarters": "City, Country",
+      "ticker": "Stock ticker if publicly traded, empty string otherwise",
+      "employees": "Approximate employee count (e.g. '50,000+', '500-1000')",
+      "relevance": "Why this company would be relevant in a capital markets / database technology context",
+      "logo_url": ""
+    }}
+  ]
+}}
+
+Prioritize financial services companies, technology companies, and database vendors.
+If the name clearly identifies a single well-known company, still return it as the
+only match so the user can confirm. Return ONLY valid JSON."""
+
+    try:
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1500,
+            tools=[
+                {
+                    "type": "web_search_20250305",
+                    "name": "web_search",
+                    "max_uses": 3,
+                }
+            ],
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        text = ""
+        for block in response.content:
+            if getattr(block, "type", None) == "text":
+                text += block.text
+
+        data = _parse_json_safe(text)
+        return data.get("matches", [])
+
+    except Exception as e:
+        logger.error("Client lookup failed: %s", e)
+        return [{"name": query, "description": "Could not look up — using as entered", "industry": "", "headquarters": "", "ticker": "", "employees": "", "relevance": "", "logo_url": ""}]
+
+
+def _parse_json_safe(text: str) -> dict:
+    """Extract JSON from LLM response text."""
+    import re
+
+    match = re.search(r"```(?:json)?\s*\n([\s\S]*?)\n```", text)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
+    match = re.search(r"\{[\s\S]*\}", text)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except json.JSONDecodeError:
+            pass
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# Client Intelligence Agent
+# ---------------------------------------------------------------------------
+
+
+class ClientIntelligenceAgent:
+    """Gathers current intelligence about the client company.
+
+    Searches for recent news, AI/database initiatives, technology stack,
+    and strategic priorities to make the battle card more targeted.
+    """
+
+    def gather(self, client_name: str, client_industry: str = "") -> AgentResult:
+        """Search for current intelligence about the client company."""
+        try:
+            import anthropic
+
+            client = anthropic.Anthropic()
+
+            prompt = f"""Research the company "{client_name}" {f'(industry: {client_industry})' if client_industry else ''} and gather current competitive intelligence.
+
+Focus on:
+1. Company overview and current strategic direction
+2. Recent news (last 6 months) — especially AI initiatives, database/technology migrations, digital transformation
+3. Their current technology stack for data/analytics (do they use kdb+, Oracle, Hadoop, Snowflake, etc.?)
+4. Key business priorities and challenges
+5. Any known database or time-series analytics pain points
+6. Leadership changes relevant to technology decisions
+7. Recent earnings calls mentions of technology investments
+
+Return as JSON:
+{{
+  "company_overview": "2-3 sentence overview of the company and their business",
+  "recent_news": [
+    {{"headline": "...", "date": "YYYY-MM-DD", "source": "Publication name", "category": "AI Initiative|Database Migration|Leadership|Partnership|Financial|Technology", "summary": "Brief summary of the news item"}}
+  ],
+  "ai_db_initiatives": "Summary of their AI and database technology initiatives. What are they investing in? Any known migrations or evaluations?",
+  "technology_stack": "Known technology stack details, especially for data analytics, time-series, and trading systems",
+  "key_priorities": ["priority1", "priority2", "priority3"],
+  "potential_pain_points": ["pain point that KX could address", "another pain point"]
+}}
+
+Only include verifiable information. Do not fabricate. Return ONLY valid JSON."""
+
+            response = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=2048,
+                tools=[
+                    {
+                        "type": "web_search_20250305",
+                        "name": "web_search",
+                        "max_uses": 5,
+                    }
+                ],
+                messages=[{"role": "user", "content": prompt}],
+            )
+
+            text = ""
+            for block in response.content:
+                if getattr(block, "type", None) == "text":
+                    text += block.text
+
+            data = _parse_json_safe(text)
+            news_count = len(data.get("recent_news", []))
+
+            return AgentResult(
+                agent_name="Client Intelligence",
+                data=data,
+                sources_count=news_count + (1 if data.get("company_overview") else 0),
+            )
+
+        except Exception as e:
+            logger.error("ClientIntelligenceAgent failed: %s", e)
+            return AgentResult(
+                agent_name="Client Intelligence",
+                data={
+                    "company_overview": "",
+                    "recent_news": [],
+                    "ai_db_initiatives": "",
+                    "technology_stack": "",
+                    "key_priorities": [],
+                    "potential_pain_points": [],
+                },
+                error=str(e),
+            )
+
+
 class InternalKBAgent:
     """Queries the ChromaDB vector store for existing competitive intelligence."""
 

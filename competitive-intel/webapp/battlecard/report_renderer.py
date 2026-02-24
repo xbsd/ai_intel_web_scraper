@@ -1,14 +1,20 @@
 """McKinsey-style HTML report renderer for battle cards.
 
 Generates a premium, print-ready HTML document with:
-- Page 1: Executive Overview & Client Alignment
+- Page 1: Executive Overview & Client Alignment (+ Client Intelligence)
 - Page 2: Head-to-Head Technical & Visual Evidence
-- Page 3: Tactical Execution (Sales Rep Only)
+- Page 3: Tactical Execution (Sales Rep Only — enhanced)
+
+Supports three export modes:
+- "combined":           Full battle card (all pages, logos, confidential)
+- "client_tearsheet":   Pages 1-2 only, no confidential markings
+- "sales_confidential": Page 3 only, sales-eyes-only
 
 The HTML is self-contained with embedded CSS for both screen and print/PDF.
 """
 
 import html
+import json
 import logging
 from datetime import datetime
 
@@ -16,12 +22,38 @@ from webapp.battlecard.models import BattleCardReport
 
 logger = logging.getLogger(__name__)
 
+# ── KX logo as inline SVG ──
+KX_LOGO_SVG = """<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="90" height="30">
+  <rect width="120" height="40" rx="4" fill="#0a1628"/>
+  <text x="16" y="29" font-family="'DM Sans','Inter',sans-serif" font-size="24" font-weight="800" fill="#5b6ef5">K</text>
+  <text x="40" y="29" font-family="'DM Sans','Inter',sans-serif" font-size="24" font-weight="800" fill="#2dd4bf">X</text>
+  <text x="64" y="26" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="600" fill="#94a3b8">kdb+</text>
+</svg>"""
 
-def render_html(report: BattleCardReport) -> str:
-    """Render a BattleCardReport as premium HTML."""
+
+def render_html(report: BattleCardReport, export_mode: str = "combined") -> str:
+    """Render a BattleCardReport as premium HTML.
+
+    Args:
+        report: The battle card report data.
+        export_mode: One of "combined", "client_tearsheet", "sales_confidential".
+    """
     h = html.escape
 
-    # Build feature matrix rows
+    # Determine which pages to include
+    show_page1 = export_mode in ("combined", "client_tearsheet")
+    show_page2 = export_mode in ("combined", "client_tearsheet")
+    show_page3 = export_mode in ("combined", "sales_confidential")
+    show_confidential = export_mode in ("combined", "sales_confidential")
+
+    generated_time = report.generated_at.strftime("%B %d, %Y at %H:%M UTC")
+    use_case_label = report.use_case or "General Competitive Analysis"
+    competitor = report.competitor_name or "Competitor"
+    client = report.client_name or "Prospect"
+
+    # ── Build data fragments ──
+
+    # Feature matrix rows
     feature_rows = ""
     for f in report.feature_matrix:
         kx_class = f"rating-{f.kx_rating}" if f.kx_rating in ("green", "yellow", "red") else ""
@@ -33,7 +65,7 @@ def render_html(report: BattleCardReport) -> str:
           <td class="rating-cell {comp_class}">{h(f.competitor_detail or f.competitor_rating.upper())}</td>
         </tr>"""
 
-    # Build benchmark rows + chart data
+    # Benchmark rows + chart data
     benchmark_rows = ""
     chart_labels = []
     chart_kx = []
@@ -47,11 +79,10 @@ def render_html(report: BattleCardReport) -> str:
           <td class="source-cell">{h(b.source)}</td>
         </tr>"""
         chart_labels.append(b.metric[:30])
-        # Extract numeric values for chart (best effort)
         chart_kx.append(_extract_number(b.kx_value))
         chart_comp.append(_extract_number(b.competitor_value))
 
-    # Build pain points
+    # Pain points
     pain_rows = ""
     for p in report.pain_points:
         pain_rows += f"""
@@ -60,7 +91,7 @@ def render_html(report: BattleCardReport) -> str:
           <td class="solution-cell">{h(p.kx_solution)}</td>
         </tr>"""
 
-    # Build trap questions
+    # Trap questions
     trap_items = ""
     for i, t in enumerate(report.trap_questions, 1):
         trap_items += f"""
@@ -73,7 +104,7 @@ def render_html(report: BattleCardReport) -> str:
           </div>
         </div>"""
 
-    # Build objection handlers
+    # Objection handlers
     objection_items = ""
     for o in report.objection_handlers:
         objection_items += f"""
@@ -84,22 +115,161 @@ def render_html(report: BattleCardReport) -> str:
           <div class="response-text">{h(o.response)}</div>
         </div>"""
 
-    # Build competitor news
-    news_items = ""
+    # Competitor news — using a TABLE to fix the date/headline overlap
+    news_table_rows = ""
     for n in report.competitor_news:
-        news_items += f"""
-        <div class="news-item">
-          <div class="news-date">{h(n.date)}</div>
-          <div class="news-headline">{h(n.headline)}</div>
-          <div class="news-implication">{h(n.implication)}</div>
-        </div>"""
+        news_table_rows += f"""
+        <tr>
+          <td class="news-date-cell">{h(n.date)}</td>
+          <td>
+            <div class="news-headline">{h(n.headline)}</div>
+            <div class="news-implication">{h(n.implication)}</div>
+          </td>
+        </tr>"""
 
-    generated_time = report.generated_at.strftime("%B %d, %Y at %H:%M UTC")
-    use_case_label = report.use_case or "General Competitive Analysis"
-    competitor = report.competitor_name or "Competitor"
-    client = report.client_name or "Prospect"
+    # Client intelligence section
+    client_intel_html = ""
+    if report.client_intelligence and show_page1:
+        ci = report.client_intelligence
+        intel_parts = []
+        if ci.company_overview:
+            intel_parts.append(f'<div class="intel-overview">{h(ci.company_overview)}</div>')
+        if ci.ai_db_initiatives:
+            intel_parts.append(f"""
+            <div class="intel-subsection">
+              <div class="intel-subsection-title">AI & Database Initiatives</div>
+              <div class="intel-subsection-text">{h(ci.ai_db_initiatives)}</div>
+            </div>""")
+        if ci.technology_stack:
+            intel_parts.append(f"""
+            <div class="intel-subsection">
+              <div class="intel-subsection-title">Known Technology Stack</div>
+              <div class="intel-subsection-text">{h(ci.technology_stack)}</div>
+            </div>""")
+        if ci.key_priorities:
+            priority_list = "".join(f"<li>{h(p)}</li>" for p in ci.key_priorities)
+            intel_parts.append(f"""
+            <div class="intel-subsection">
+              <div class="intel-subsection-title">Key Priorities</div>
+              <ul class="intel-list">{priority_list}</ul>
+            </div>""")
+        if ci.recent_news:
+            news_rows = ""
+            for item in ci.recent_news[:6]:
+                cat_badge = f'<span class="intel-category-badge">{h(item.category)}</span>' if item.category else ""
+                news_rows += f"""
+                <tr>
+                  <td class="news-date-cell">{h(item.date)}</td>
+                  <td>
+                    <div class="news-headline">{h(item.headline)} {cat_badge}</div>
+                    {f'<div class="news-implication">{h(item.summary)}</div>' if item.summary else ''}
+                  </td>
+                </tr>"""
+            intel_parts.append(f"""
+            <div class="intel-subsection">
+              <div class="intel-subsection-title">Recent Activity</div>
+              <table class="news-table">
+                <thead><tr><th style="width:100px">Date</th><th>Activity</th></tr></thead>
+                <tbody>{news_rows}</tbody>
+              </table>
+            </div>""")
 
-    return f"""<!DOCTYPE html>
+        if intel_parts:
+            client_intel_html = f"""
+    <div class="section">
+      <div class="section-title">Client Intelligence: {h(client)}</div>
+      {"".join(intel_parts)}
+    </div>"""
+
+    # Competitive positioning section
+    positioning_html = ""
+    if report.competitive_positioning and show_page3:
+        cp = report.competitive_positioning
+        diff_list = "".join(f"<li>{h(d)}</li>" for d in cp.key_differentiators)
+        landmine_list = "".join(f"<li>{h(l)}</li>" for l in cp.landmines_to_set)
+        proof_list = "".join(f"<li>{h(p)}</li>" for p in cp.proof_points)
+        positioning_html = f"""
+    <div class="section">
+      <div class="section-title">Competitive Positioning</div>
+      <div class="positioning-statement">{h(cp.positioning_statement)}</div>
+      <div class="positioning-grid">
+        <div class="positioning-col">
+          <div class="positioning-col-title">Key Differentiators</div>
+          <ul class="positioning-list positioning-list--green">{diff_list}</ul>
+        </div>
+        <div class="positioning-col">
+          <div class="positioning-col-title">Landmines to Set</div>
+          <ul class="positioning-list positioning-list--amber">{landmine_list}</ul>
+        </div>
+        <div class="positioning-col">
+          <div class="positioning-col-title">Proof Points</div>
+          <ul class="positioning-list positioning-list--blue">{proof_list}</ul>
+        </div>
+      </div>
+    </div>"""
+
+    # Deal strategy section
+    deal_strategy_html = ""
+    if report.deal_strategy and show_page3:
+        strategy_rows = ""
+        for ds in report.deal_strategy:
+            strategy_rows += f"""
+            <tr>
+              <td class="strategy-stage">{h(ds.stage)}</td>
+              <td>{h(ds.action)}</td>
+              <td class="strategy-talking-point">{h(ds.talking_point)}</td>
+            </tr>"""
+        deal_strategy_html = f"""
+    <div class="section">
+      <div class="section-title">Deal Strategy Playbook</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">Stage</th>
+            <th style="width:40%">Action</th>
+            <th style="width:40%">Talking Point</th>
+          </tr>
+        </thead>
+        <tbody>{strategy_rows}</tbody>
+      </table>
+    </div>"""
+
+    # Pricing guidance section
+    pricing_html = ""
+    if report.pricing_guidance and show_page3:
+        pricing_html = f"""
+    <div class="section">
+      <div class="section-title">Pricing & TCO Guidance</div>
+      <div class="pricing-box">{h(report.pricing_guidance)}</div>
+    </div>"""
+
+    # Client logo
+    client_logo_html = ""
+    if report.client_logo_url:
+        client_logo_html = f'<img src="{h(report.client_logo_url)}" alt="{h(client)} logo" class="client-logo" crossorigin="anonymous">'
+
+    # Header badge text
+    badge_text = "CONFIDENTIAL" if show_confidential else "CLIENT DOCUMENT"
+
+    # Determine total page count and label per page
+    pages = []
+    if show_page1:
+        pages.append("executive")
+    if show_page2:
+        pages.append("technical")
+    if show_page3:
+        pages.append("tactical")
+    total_pages = len(pages)
+
+    def page_label(page_type):
+        idx = pages.index(page_type) + 1
+        labels = {"executive": "Executive Overview", "technical": "Head-to-Head Technical Evidence", "tactical": "Tactical Execution"}
+        return f"Page {idx} of {total_pages} — {labels[page_type]}"
+
+    # ── Assemble HTML ──
+    html_parts = []
+
+    html_parts.append(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -162,9 +332,9 @@ def render_html(report: BattleCardReport) -> str:
     .report-header {{
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
       color: var(--white);
-      padding: 28px 36px;
+      padding: 24px 32px;
       border-radius: 10px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       position: relative;
       overflow: hidden;
     }}
@@ -185,6 +355,25 @@ def render_html(report: BattleCardReport) -> str:
       position: relative;
       z-index: 1;
     }}
+    .header-logos {{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }}
+    .client-logo {{
+      height: 28px;
+      max-width: 100px;
+      object-fit: contain;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.9);
+      padding: 3px 6px;
+    }}
+    .logo-divider {{
+      color: var(--slate-400);
+      font-size: 16pt;
+      font-weight: 300;
+    }}
     .header-brand {{
       font-size: 10pt;
       text-transform: uppercase;
@@ -194,7 +383,7 @@ def render_html(report: BattleCardReport) -> str:
       margin-bottom: 6px;
     }}
     .header-title {{
-      font-size: 22pt;
+      font-size: 20pt;
       font-weight: 700;
       letter-spacing: -0.5px;
       line-height: 1.2;
@@ -204,7 +393,8 @@ def render_html(report: BattleCardReport) -> str:
     }}
     .header-meta {{
       display: flex;
-      gap: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
       margin-top: 12px;
       position: relative;
       z-index: 1;
@@ -229,6 +419,7 @@ def render_html(report: BattleCardReport) -> str:
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
+      white-space: nowrap;
     }}
 
     /* ── Sections ── */
@@ -271,6 +462,7 @@ def render_html(report: BattleCardReport) -> str:
       width: 100%;
       border-collapse: collapse;
       font-size: 10pt;
+      table-layout: fixed;
     }}
     th {{
       background: var(--navy);
@@ -286,6 +478,8 @@ def render_html(report: BattleCardReport) -> str:
       padding: 10px 14px;
       border-bottom: 1px solid var(--slate-200);
       vertical-align: top;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }}
     tr:nth-child(even) td {{
       background: var(--slate-50);
@@ -365,6 +559,92 @@ def render_html(report: BattleCardReport) -> str:
       height: 300px;
     }}
 
+    /* ── Client Intelligence ── */
+    .intel-overview {{
+      font-size: 10.5pt;
+      color: var(--slate-700);
+      line-height: 1.7;
+      margin-bottom: 16px;
+      padding: 14px 18px;
+      background: var(--slate-50);
+      border-radius: 8px;
+      border-left: 4px solid var(--teal);
+    }}
+    .intel-subsection {{
+      margin-bottom: 14px;
+    }}
+    .intel-subsection-title {{
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }}
+    .intel-subsection-text {{
+      font-size: 10pt;
+      color: var(--slate-600);
+      line-height: 1.6;
+    }}
+    .intel-list {{
+      list-style: none;
+      padding: 0;
+    }}
+    .intel-list li {{
+      padding: 4px 0 4px 16px;
+      position: relative;
+      font-size: 10pt;
+      color: var(--slate-600);
+    }}
+    .intel-list li::before {{
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 6px;
+      height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+    }}
+    .intel-category-badge {{
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--indigo-glow);
+      color: var(--indigo);
+      padding: 1px 8px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }}
+
+    /* ── News Table (fixes overlap) ── */
+    .news-table {{
+      table-layout: fixed;
+    }}
+    .news-date-cell {{
+      width: 100px;
+      font-size: 8.5pt;
+      color: var(--slate-400);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      vertical-align: top;
+      padding-right: 8px;
+    }}
+    .news-headline {{
+      font-weight: 600;
+      color: var(--navy);
+      font-size: 10pt;
+      word-wrap: break-word;
+    }}
+    .news-implication {{
+      font-size: 9pt;
+      color: var(--slate-600);
+      margin-top: 2px;
+    }}
+
     /* ── Trap Questions ── */
     .trap-card {{
       display: flex;
@@ -441,31 +721,79 @@ def render_html(report: BattleCardReport) -> str:
       font-weight: 500;
     }}
 
-    /* ── Competitor News ── */
-    .news-item {{
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 10px 14px;
-      background: var(--slate-50);
-      border-radius: 6px;
-    }}
-    .news-date {{
-      font-size: 8.5pt;
-      color: var(--slate-400);
-      white-space: nowrap;
-      min-width: 80px;
-      font-family: var(--font-mono);
-    }}
-    .news-headline {{
-      font-weight: 600;
+    /* ── Competitive Positioning ── */
+    .positioning-statement {{
+      font-size: 10.5pt;
       color: var(--navy);
-      font-size: 10pt;
+      line-height: 1.7;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--indigo-glow), rgba(45, 212, 191, 0.06));
+      border: 1px solid rgba(91, 110, 245, 0.2);
+      border-radius: 8px;
+      margin-bottom: 16px;
     }}
-    .news-implication {{
+    .positioning-grid {{
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }}
+    .positioning-col {{
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 14px;
+    }}
+    .positioning-col-title {{
       font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }}
+    .positioning-list {{
+      list-style: none;
+      padding: 0;
+      font-size: 9.5pt;
+    }}
+    .positioning-list li {{
+      padding: 4px 0 4px 14px;
+      position: relative;
+      color: var(--slate-700);
+    }}
+    .positioning-list li::before {{
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }}
+    .positioning-list--green li::before {{ background: var(--emerald); }}
+    .positioning-list--amber li::before {{ background: var(--amber); }}
+    .positioning-list--blue li::before {{ background: var(--indigo); }}
+
+    /* ── Deal Strategy ── */
+    .strategy-stage {{
+      font-weight: 700;
+      color: var(--indigo);
+      white-space: nowrap;
+    }}
+    .strategy-talking-point {{
+      font-style: italic;
       color: var(--slate-600);
-      margin-top: 2px;
+    }}
+
+    /* ── Pricing Box ── */
+    .pricing-box {{
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-left: 4px solid var(--emerald);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 10pt;
+      line-height: 1.7;
+      color: var(--slate-700);
     }}
 
     /* ── Confidential Footer ── */
@@ -510,6 +838,7 @@ def render_html(report: BattleCardReport) -> str:
       .chart-container {{ break-inside: avoid; }}
       .trap-card {{ break-inside: avoid; }}
       .objection-card {{ break-inside: avoid; }}
+      .positioning-grid {{ break-inside: avoid; }}
     }}
 
     /* ── Screen Hover Effects ── */
@@ -530,17 +859,23 @@ def render_html(report: BattleCardReport) -> str:
     }}
   </style>
 </head>
-<body>
+<body>""")
 
-  <!-- ═══════════════ PAGE 1: EXECUTIVE OVERVIEW ═══════════════ -->
+    # ── PAGE 1: Executive Overview ──
+    if show_page1:
+        html_parts.append(f"""
   <div class="page">
     <div class="report-header">
       <div class="header-top">
         <div>
+          <div class="header-logos">
+            {KX_LOGO_SVG}
+            {f'<span class="logo-divider">|</span>{client_logo_html}' if client_logo_html else ''}
+          </div>
           <div class="header-brand">KX Competitive Intelligence</div>
           <div class="header-title">Battle Card: <span>KX/kdb+</span> vs {h(competitor)}</div>
         </div>
-        <div class="header-badge">CONFIDENTIAL</div>
+        <div class="header-badge">{badge_text}</div>
       </div>
       <div class="header-meta">
         <div class="meta-tag"><strong>Client:</strong> {h(client)}</div>
@@ -549,12 +884,14 @@ def render_html(report: BattleCardReport) -> str:
       </div>
     </div>
 
-    <div class="page-label">Page 1 of 3 — Executive Overview</div>
+    <div class="page-label">{page_label("executive")}</div>
 
     <div class="section">
       <div class="section-title">Why KX Wins</div>
       <div class="kx-wins">{h(report.why_kx_wins)}</div>
     </div>
+
+    {client_intel_html}
 
     <div class="section">
       <div class="section-title">Client Context Matrix</div>
@@ -572,13 +909,15 @@ def render_html(report: BattleCardReport) -> str:
     </div>
 
     <div class="confidential-footer">
-      KX Confidential — For Internal Sales Use Only — {generated_time}
+      {"KX Confidential — For Internal Sales Use Only" if show_confidential else "KX — Client Document"} — {generated_time}
     </div>
-  </div>
+  </div>""")
 
-  <!-- ═══════════════ PAGE 2: TECHNICAL EVIDENCE ═══════════════ -->
+    # ── PAGE 2: Technical Evidence ──
+    if show_page2:
+        html_parts.append(f"""
   <div class="page">
-    <div class="page-label">Page 2 of 3 — Head-to-Head Technical Evidence</div>
+    <div class="page-label">{page_label("technical")}</div>
 
     <div class="section">
       <div class="section-title">Architecture Comparison</div>
@@ -593,10 +932,10 @@ def render_html(report: BattleCardReport) -> str:
       <table>
         <thead>
           <tr>
-            <th>Metric</th>
-            <th>KX/kdb+</th>
-            <th>{h(competitor)}</th>
-            <th>Source</th>
+            <th style="width:25%">Metric</th>
+            <th style="width:25%">KX/kdb+</th>
+            <th style="width:25%">{h(competitor)}</th>
+            <th style="width:25%">Source</th>
           </tr>
         </thead>
         <tbody>
@@ -622,18 +961,22 @@ def render_html(report: BattleCardReport) -> str:
     </div>
 
     <div class="confidential-footer">
-      KX Confidential — For Internal Sales Use Only — {generated_time}
+      {"KX Confidential — For Internal Sales Use Only" if show_confidential else "KX — Client Document"} — {generated_time}
     </div>
-  </div>
+  </div>""")
 
-  <!-- ═══════════════ PAGE 3: TACTICAL EXECUTION ═══════════════ -->
+    # ── PAGE 3: Tactical Execution (Enhanced) ──
+    if show_page3:
+        html_parts.append(f"""
   <div class="page">
-    <div class="page-label">Page 3 of 3 — Tactical Execution</div>
+    <div class="page-label">{page_label("tactical")}</div>
 
     <div class="tactical-warning">
       <div class="tactical-warning-icon">&#128274;</div>
       <div class="tactical-warning-text">For Sales Rep's Eyes Only — Do Not Share With Client</div>
     </div>
+
+    {positioning_html}
 
     <div class="section">
       <div class="section-title">"Trap" Questions to Expose Weaknesses</div>
@@ -645,18 +988,24 @@ def render_html(report: BattleCardReport) -> str:
       {objection_items if objection_items else '<div style="text-align:center;color:var(--slate-400);padding:20px">No objection handlers generated</div>'}
     </div>
 
+    {deal_strategy_html}
+
+    {pricing_html}
+
     <div class="section">
       <div class="section-title">Recent Competitor Activity (Last 90 Days)</div>
-      {news_items if news_items else '<div style="text-align:center;color:var(--slate-400);padding:20px">No recent news found</div>'}
+      {_build_news_section(news_table_rows)}
     </div>
 
     <div class="confidential-footer">
       KX Confidential — For Internal Sales Use Only — {generated_time}<br>
       Generated by KX Competitive Intelligence Platform — {len(report.agents_used)} agents deployed — {report.sources_count} sources analyzed — {report.generation_time_ms}ms
     </div>
-  </div>
+  </div>""")
 
-  <!-- ── Chart.js for Benchmark Visualization ── -->
+    # ── Chart.js ──
+    if show_page2:
+        html_parts.append(f"""
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {{
@@ -664,7 +1013,6 @@ def render_html(report: BattleCardReport) -> str:
       const kxData = {json_safe(chart_kx)};
       const compData = {json_safe(chart_comp)};
 
-      // Only render chart if we have data
       if (labels.length === 0 || kxData.every(v => v === 0)) return;
 
       const ctx = document.getElementById('chartCanvas');
@@ -720,10 +1068,25 @@ def render_html(report: BattleCardReport) -> str:
         }}
       }});
     }});
-  </script>
+  </script>""")
 
+    html_parts.append("""
 </body>
-</html>"""
+</html>""")
+
+    return "\n".join(html_parts)
+
+
+def _build_news_section(news_table_rows: str) -> str:
+    """Build the competitor news section HTML."""
+    if news_table_rows:
+        return (
+            '<table class="news-table">'
+            '<thead><tr><th style="width:100px">Date</th><th>Activity &amp; Implication</th></tr></thead>'
+            f'<tbody>{news_table_rows}</tbody>'
+            '</table>'
+        )
+    return '<div style="text-align:center;color:var(--slate-400);padding:20px">No recent news found</div>'
 
 
 def _extract_number(value: str) -> float:
@@ -799,5 +1162,4 @@ def _inline_md(text: str) -> str:
 
 def json_safe(data) -> str:
     """Convert Python data to JSON-safe string for embedding in JS."""
-    import json
     return json.dumps(data)

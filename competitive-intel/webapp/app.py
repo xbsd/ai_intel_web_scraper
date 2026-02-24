@@ -622,14 +622,40 @@ async def api_battlecard_generate(req: Request):
 
 @app.post("/api/battlecard/render")
 async def api_battlecard_render(req: Request):
-    """Render a battle card report as HTML."""
+    """Render a battle card report as HTML.
+
+    Accepts optional query param `export_mode`:
+      - "combined" (default): Full 3-page battle card
+      - "client_tearsheet": Pages 1-2 only, no confidential markings
+      - "sales_confidential": Page 3 only, sales-eyes-only
+    """
     from webapp.battlecard.models import BattleCardReport
     from webapp.battlecard.report_renderer import render_html
 
     body = await req.json()
+    export_mode = body.pop("export_mode", "combined")
+    if export_mode not in ("combined", "client_tearsheet", "sales_confidential"):
+        export_mode = "combined"
     report = BattleCardReport(**body)
-    html_content = render_html(report)
+    html_content = render_html(report, export_mode=export_mode)
     return HTMLResponse(content=html_content)
+
+
+@app.post("/api/battlecard/client-lookup")
+async def api_battlecard_client_lookup(req: Request):
+    """Look up a client name and return potential company matches.
+
+    Used for client name disambiguation before battle card generation.
+    """
+    from webapp.battlecard.agents import lookup_client
+
+    body = await req.json()
+    query = body.get("query", "").strip()
+    if not query or len(query) < 2:
+        return {"query": query, "matches": []}
+
+    matches = lookup_client(query)
+    return {"query": query, "matches": matches}
 
 
 @app.get("/api/battlecard/competitors")

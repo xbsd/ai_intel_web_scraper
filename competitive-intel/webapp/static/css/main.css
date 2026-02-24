@@ -2911,3 +2911,223 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   BATTLE CARD — CLIENT NAME DISAMBIGUATION
+   ══════════════════════════════════════════════════════════════ */
+
+.bc-client-lookup-wrap {
+  position: relative;
+}
+
+.bc-client-lookup-spinner {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.bc-client-lookup-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-top: 4px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.bc-lookup-empty {
+  padding: 12px 16px;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.bc-lookup-match {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-secondary);
+  transition: background 150ms ease;
+  font-family: inherit;
+}
+
+.bc-lookup-match:last-child {
+  border-bottom: none;
+}
+
+.bc-lookup-match:hover {
+  background: var(--surface-tint-blue);
+}
+
+.bc-lookup-match--custom {
+  background: var(--surface-secondary);
+}
+
+.bc-lookup-match--custom:hover {
+  background: var(--surface-tertiary);
+}
+
+.bc-lookup-match__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.bc-lookup-match__desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.bc-lookup-match__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.bc-lookup-match__meta span::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.bc-lookup-match__relevance {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--accent-primary);
+  font-style: italic;
+}
+
+/* ── Confirmed Client Badge ── */
+
+.bc-client-confirmed {
+  background: var(--surface-tint-green);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 6px;
+}
+
+.bc-client-confirmed__badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #059669;
+}
+
+.bc-client-confirmed__detail {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  margin-left: 20px;
+}
+
+.bc-client-confirmed__change {
+  display: inline-block;
+  margin-top: 6px;
+  margin-left: 20px;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--accent-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+  padding: 0;
+}
+
+.bc-client-confirmed__change:hover {
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BATTLE CARD — EXPORT DROPDOWN
+   ══════════════════════════════════════════════════════════════ */
+
+.bc-export-dropdown-wrap {
+  position: relative;
+}
+
+.bc-export-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bc-export-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-top: 6px;
+  width: 280px;
+  padding: 6px;
+}
+
+.bc-export-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 150ms ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.bc-export-option:hover {
+  background: var(--surface-tint-blue);
+}
+
+.bc-export-option__icon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bc-export-option__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.bc-export-option__desc {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 1px;
+  line-height: 1.3;
+}

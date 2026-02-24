@@ -17,6 +17,7 @@ import anthropic
 from webapp.battlecard.agents import (
     AgentResult,
     BenchmarkAgent,
+    ClientIntelligenceAgent,
     DeveloperSentimentAgent,
     InternalKBAgent,
     MarketNewsAgent,
@@ -26,7 +27,11 @@ from webapp.battlecard.models import (
     BattleCardReport,
     BattleCardRequest,
     BenchmarkDataPoint,
+    ClientIntelItem,
+    ClientIntelligence,
+    CompetitivePositioning,
     CompetitorNewsItem,
+    DealStrategyItem,
     FeatureComparison,
     ObjectionHandler,
     PainPoint,
@@ -55,6 +60,7 @@ def _build_synthesis_prompt(
     competitor_name: str,
     agent_results: list[AgentResult],
     chat_context: str = "",
+    client_intel: Optional[dict] = None,
 ) -> str:
     """Build the synthesis prompt from all agent results."""
     sections = []
@@ -68,11 +74,41 @@ def _build_synthesis_prompt(
             ctx += f"**Industry**: {request.client_industry}\n"
         if request.use_case:
             ctx += f"**Target Use Case**: {request.use_case.replace('_', ' ').title()}\n"
+        # Add confirmed client details if available
+        if request.confirmed_client:
+            cc = request.confirmed_client
+            if cc.description:
+                ctx += f"**Company Description**: {cc.description}\n"
+            if cc.headquarters:
+                ctx += f"**Headquarters**: {cc.headquarters}\n"
+            if cc.employees:
+                ctx += f"**Employees**: {cc.employees}\n"
+            if cc.ticker:
+                ctx += f"**Ticker**: {cc.ticker}\n"
         if request.call_notes:
             ctx += f"\n**Call Notes / Transcripts**:\n{request.call_notes[:3000]}\n"
         if request.client_emails:
             ctx += f"\n**Recent Client Emails**:\n{request.client_emails[:2000]}\n"
         sections.append(ctx)
+
+    # Client intelligence (current news, AI/DB activity)
+    if client_intel:
+        intel_section = "## CLIENT INTELLIGENCE (Current Company Research)\n"
+        if client_intel.get("company_overview"):
+            intel_section += f"**Overview**: {client_intel['company_overview']}\n"
+        if client_intel.get("ai_db_initiatives"):
+            intel_section += f"\n**AI & Database Initiatives**: {client_intel['ai_db_initiatives']}\n"
+        if client_intel.get("technology_stack"):
+            intel_section += f"\n**Known Technology Stack**: {client_intel['technology_stack']}\n"
+        if client_intel.get("key_priorities"):
+            intel_section += f"\n**Key Priorities**: {', '.join(client_intel['key_priorities'])}\n"
+        if client_intel.get("potential_pain_points"):
+            intel_section += f"\n**Potential Pain Points**: {', '.join(client_intel['potential_pain_points'])}\n"
+        if client_intel.get("recent_news"):
+            intel_section += "\n**Recent News**:\n"
+            for item in client_intel["recent_news"][:10]:
+                intel_section += f"- [{item.get('date', 'N/A')}] {item.get('headline', '')} ({item.get('category', '')})\n"
+        sections.append(intel_section)
 
     if chat_context:
         sections.append(
@@ -133,8 +169,24 @@ Generate a battle card in this EXACT JSON structure:
   ],
 
   "competitor_news": [
-    {{"headline": "Recent news item", "date": "Date", "implication": "What it means competitively"}}
-  ]
+    {{"headline": "Recent news item", "date": "YYYY-MM-DD", "implication": "What it means competitively"}}
+  ],
+
+  "competitive_positioning": {{
+    "positioning_statement": "A 2-3 sentence statement on how to position KX against {competitor_name} specifically for this client. Reference their industry, use case, and known pain points.",
+    "key_differentiators": ["differentiator 1", "differentiator 2", "differentiator 3"],
+    "landmines_to_set": ["A technical requirement to plant early in the evaluation that {competitor_name} cannot meet", "another landmine"],
+    "proof_points": ["Customer reference or case study that resonates with this client's profile"]
+  }},
+
+  "deal_strategy": [
+    {{"stage": "Discovery", "action": "Key action for this deal stage", "talking_point": "What to emphasize"}},
+    {{"stage": "Technical Evaluation", "action": "Key action", "talking_point": "What to emphasize"}},
+    {{"stage": "POC / Benchmark", "action": "Key action", "talking_point": "What to emphasize"}},
+    {{"stage": "Procurement / Close", "action": "Key action", "talking_point": "What to emphasize"}}
+  ],
+
+  "pricing_guidance": "Strategic pricing guidance: how to position KX's pricing model vs {competitor_name}. Include total cost of ownership arguments, licensing model advantages, and ROI talking points. Reference the client's scale and use case."
 }}
 
 Generate at least:
@@ -144,6 +196,9 @@ Generate at least:
 - 3-4 trap questions
 - 4-6 objection handlers
 - Any recent competitor news found
+- Full competitive positioning with landmines and proof points
+- Deal strategy for each sales stage
+- Pricing guidance
 
 Return ONLY valid JSON. No markdown fences, no explanation outside the JSON."""
 
@@ -170,42 +225,99 @@ class BattleCardGenerator:
         competitor = request.competitors[0]
         competitor_name = self._resolve_competitor_name(competitor)
 
-        yield ("status", {"step": "starting", "message": f"Generating battle card: KX vs {competitor_name}", "progress": 0.05})
+        yield ("status", {"step": "starting", "message": f"Generating battle card: KX vs {competitor_name}", "progress": 0.02})
+
+        # Phase 0: Client Intelligence (if client name provided)
+        client_intel = None
+        if request.client_name:
+            yield ("status", {"step": "client_intel", "message": f"Researching {request.client_name} — current news, AI & database initiatives...", "progress": 0.05})
+            client_intel = self._gather_client_intel(request)
+            if client_intel:
+                yield ("status", {"step": "client_intel_done", "message": f"Client intelligence gathered: {len(client_intel.get('recent_news', []))} news items found", "progress": 0.15})
 
         # Phase 1: Deploy agents in parallel
-        yield ("status", {"step": "agents", "message": "Deploying intelligence agents...", "progress": 0.1})
+        agent_names = [a.value.replace("_", " ").title() for a in request.agents]
+        yield ("status", {"step": "agents", "message": f"Deploying agents: {', '.join(agent_names)}", "progress": 0.18})
 
-        agent_results = self._run_agents(request, competitor)
+        agent_results = self._run_agents_with_progress(request, competitor)
 
-        yield ("status", {"step": "agents_done", "message": f"Intelligence gathered from {len(agent_results)} agents", "progress": 0.5})
+        total_sources = sum(r.sources_count for r in agent_results)
+        yield ("status", {"step": "agents_done", "message": f"All {len(agent_results)} agents complete — {total_sources} sources gathered", "progress": 0.55})
 
         # Phase 2: Load chat context if requested
         chat_context = ""
         if request.include_chat_context and request.session_id:
+            yield ("status", {"step": "chat_context", "message": "Loading active chat session context...", "progress": 0.58})
             chat_context = self._load_chat_context(request.session_id)
             if chat_context:
-                yield ("status", {"step": "chat_context", "message": "Chat context loaded", "progress": 0.55})
+                yield ("status", {"step": "chat_context_done", "message": "Chat context loaded — incorporating conversation history", "progress": 0.60})
 
         # Phase 3: Synthesize with Claude
-        yield ("status", {"step": "synthesizing", "message": "Synthesizing battle card with Claude...", "progress": 0.6})
+        yield ("status", {"step": "synthesizing", "message": "Claude is synthesizing battle card — analyzing competitive positioning...", "progress": 0.62})
 
         try:
-            report = self._synthesize(request, competitor_name, agent_results, chat_context)
+            yield ("status", {"step": "synthesizing_detail", "message": "Building executive overview, benchmarks, and feature matrix...", "progress": 0.68})
+
+            report = self._synthesize(request, competitor_name, agent_results, chat_context, client_intel)
+
+            yield ("status", {"step": "synthesizing_sales", "message": "Generating tactical sales section — trap questions, objection handlers...", "progress": 0.82})
+
             report.generation_time_ms = int((time.time() - t_start) * 1000)
             report.agents_used = [r.agent_name for r in agent_results]
-            report.sources_count = sum(r.sources_count for r in agent_results)
+            if client_intel:
+                report.agents_used.append("Client Intelligence")
+            report.sources_count = total_sources + (
+                len(client_intel.get("recent_news", [])) if client_intel else 0
+            )
             report.client_name = request.client_name
             report.client_industry = request.client_industry
             report.use_case = request.use_case.value.replace("_", " ").title()
             report.competitor_name = competitor_name
             report.tone = request.tone.value
+            if request.confirmed_client and request.confirmed_client.logo_url:
+                report.client_logo_url = request.confirmed_client.logo_url
 
-            yield ("status", {"step": "done", "message": "Battle card generated", "progress": 1.0})
+            # Attach client intelligence to report
+            if client_intel:
+                report.client_intelligence = ClientIntelligence(
+                    company_overview=client_intel.get("company_overview", ""),
+                    recent_news=[
+                        ClientIntelItem(**n) for n in client_intel.get("recent_news", []) if isinstance(n, dict)
+                    ],
+                    ai_db_initiatives=client_intel.get("ai_db_initiatives", ""),
+                    technology_stack=client_intel.get("technology_stack", ""),
+                    key_priorities=client_intel.get("key_priorities", []),
+                    potential_pain_points=client_intel.get("potential_pain_points", []),
+                )
+
+            yield ("status", {"step": "rendering", "message": "Formatting premium battle card document...", "progress": 0.92})
+            yield ("status", {"step": "done", "message": "Battle card generated successfully", "progress": 1.0})
             yield ("report", report)
 
         except Exception as e:
             logger.exception("Battle card synthesis failed: %s", e)
             yield ("error", {"detail": str(e)})
+
+    def _gather_client_intel(self, request: BattleCardRequest) -> Optional[dict]:
+        """Gather intelligence about the client company."""
+        try:
+            agent = ClientIntelligenceAgent()
+            result = agent.gather(
+                client_name=request.client_name,
+                client_industry=request.client_industry,
+            )
+            if result.error:
+                logger.warning("Client intel agent error: %s", result.error)
+            return result.data
+        except Exception as e:
+            logger.error("Client intelligence gathering failed: %s", e)
+            return None
+
+    def _run_agents_with_progress(
+        self, request: BattleCardRequest, competitor: str
+    ) -> list[AgentResult]:
+        """Run agents and return results (progress is yielded by caller)."""
+        return self._run_agents(request, competitor)
 
     def _run_agents(
         self, request: BattleCardRequest, competitor: str
@@ -300,15 +412,16 @@ class BattleCardGenerator:
         competitor_name: str,
         agent_results: list[AgentResult],
         chat_context: str = "",
+        client_intel: Optional[dict] = None,
     ) -> BattleCardReport:
         """Use Claude to synthesize agent results into a battle card."""
         prompt = _build_synthesis_prompt(
-            request, competitor_name, agent_results, chat_context
+            request, competitor_name, agent_results, chat_context, client_intel
         )
 
         response = self.client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=8192,
+            max_tokens=12000,
             system=SYNTHESIS_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
@@ -319,6 +432,22 @@ class BattleCardGenerator:
                 text += block.text
 
         data = self._parse_json(text)
+
+        # Parse competitive positioning
+        cp_data = data.get("competitive_positioning", {})
+        competitive_positioning = None
+        if isinstance(cp_data, dict) and cp_data:
+            competitive_positioning = CompetitivePositioning(
+                positioning_statement=cp_data.get("positioning_statement", ""),
+                key_differentiators=cp_data.get("key_differentiators", []),
+                landmines_to_set=cp_data.get("landmines_to_set", []),
+                proof_points=cp_data.get("proof_points", []),
+            )
+
+        # Parse deal strategy
+        deal_strategy = [
+            DealStrategyItem(**d) for d in data.get("deal_strategy", []) if isinstance(d, dict)
+        ]
 
         return BattleCardReport(
             why_kx_wins=data.get("why_kx_wins", ""),
@@ -341,6 +470,9 @@ class BattleCardGenerator:
             competitor_news=[
                 CompetitorNewsItem(**n) for n in data.get("competitor_news", []) if isinstance(n, dict)
             ],
+            competitive_positioning=competitive_positioning,
+            deal_strategy=deal_strategy,
+            pricing_guidance=data.get("pricing_guidance", ""),
         )
 
     def _resolve_competitor_name(self, short_name: str) -> str:

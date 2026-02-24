@@ -28,6 +28,63 @@ class AgentType(str, Enum):
     MARKET_NEWS = "market_news"
 
 
+class ExportMode(str, Enum):
+    """Export modes for battle card reports."""
+    CLIENT_TEARSHEET = "client_tearsheet"
+    SALES_CONFIDENTIAL = "sales_confidential"
+    COMBINED = "combined"
+
+
+# ── Client Disambiguation Models ──
+
+
+class ClientMatch(BaseModel):
+    """A potential match for a client name lookup."""
+
+    name: str = Field(description="Full company name")
+    description: str = Field(default="", description="Brief company description")
+    industry: str = Field(default="", description="Industry classification")
+    headquarters: str = Field(default="", description="HQ location")
+    ticker: str = Field(default="", description="Stock ticker if public")
+    employees: str = Field(default="", description="Approximate employee count")
+    relevance: str = Field(
+        default="",
+        description="Why this company is relevant to KX/capital markets",
+    )
+    logo_url: str = Field(default="", description="Company logo URL if found")
+
+
+class ClientLookupResponse(BaseModel):
+    """Response from client name disambiguation."""
+
+    query: str
+    matches: list[ClientMatch] = Field(default_factory=list)
+
+
+# ── Client Intelligence Models ──
+
+
+class ClientIntelItem(BaseModel):
+    """A news or intelligence item about the client company."""
+
+    headline: str
+    date: str = ""
+    source: str = ""
+    category: str = ""  # e.g. "AI Initiative", "Database Migration", "Leadership"
+    summary: str = ""
+
+
+class ClientIntelligence(BaseModel):
+    """Gathered intelligence about the client company."""
+
+    company_overview: str = ""
+    recent_news: list[ClientIntelItem] = Field(default_factory=list)
+    ai_db_initiatives: str = ""
+    technology_stack: str = ""
+    key_priorities: list[str] = Field(default_factory=list)
+    potential_pain_points: list[str] = Field(default_factory=list)
+
+
 # ── Request Models ──
 
 
@@ -42,6 +99,12 @@ class BattleCardRequest(BaseModel):
     use_case: UseCase = Field(default=UseCase.GENERAL)
     competitors: list[str] = Field(
         ..., min_length=1, description="Competitor short names"
+    )
+
+    # Confirmed client info (from disambiguation)
+    confirmed_client: Optional[ClientMatch] = Field(
+        default=None,
+        description="Confirmed client details from disambiguation step",
     )
 
     # Unstructured data
@@ -112,6 +175,26 @@ class CompetitorNewsItem(BaseModel):
     implication: str = ""
 
 
+# ── Enhanced Sales Section Models ──
+
+
+class DealStrategyItem(BaseModel):
+    """Strategic guidance for closing the deal."""
+
+    stage: str  # e.g. "Discovery", "Technical Eval", "Procurement"
+    action: str
+    talking_point: str = ""
+
+
+class CompetitivePositioning(BaseModel):
+    """How to position KX against this specific competitor for this client."""
+
+    positioning_statement: str = ""
+    key_differentiators: list[str] = Field(default_factory=list)
+    landmines_to_set: list[str] = Field(default_factory=list)
+    proof_points: list[str] = Field(default_factory=list)
+
+
 class BattleCardReport(BaseModel):
     """The complete battle card report data."""
 
@@ -122,20 +205,27 @@ class BattleCardReport(BaseModel):
     use_case: str = ""
     competitor_name: str = ""
     tone: str = "highly_technical"
+    client_logo_url: str = ""
 
     # Page 1: Executive Overview
     why_kx_wins: str = ""
     pain_points: list[PainPoint] = Field(default_factory=list)
+
+    # Client Intelligence section
+    client_intelligence: Optional[ClientIntelligence] = None
 
     # Page 2: Technical Evidence
     architecture_comparison: str = ""
     benchmarks: list[BenchmarkDataPoint] = Field(default_factory=list)
     feature_matrix: list[FeatureComparison] = Field(default_factory=list)
 
-    # Page 3: Tactical Execution
+    # Page 3: Tactical Execution (enhanced)
     trap_questions: list[TrapQuestion] = Field(default_factory=list)
     objection_handlers: list[ObjectionHandler] = Field(default_factory=list)
     competitor_news: list[CompetitorNewsItem] = Field(default_factory=list)
+    competitive_positioning: Optional[CompetitivePositioning] = None
+    deal_strategy: list[DealStrategyItem] = Field(default_factory=list)
+    pricing_guidance: str = ""
 
     # Agent metadata
     agents_used: list[str] = Field(default_factory=list)
