@@ -578,3 +578,74 @@ async def upload_content(file: UploadFile = File(...)):
     _save_upload_index(index)
 
     return {"status": "ok", "file": entry}
+
+
+# ---------------------------------------------------------------------------
+# Battle Card Generator
+# ---------------------------------------------------------------------------
+
+@app.post("/api/battlecard/generate")
+async def api_battlecard_generate(req: Request):
+    """Generate a battle card via SSE streaming."""
+    from webapp.battlecard.models import BattleCardRequest
+    from webapp.battlecard.generator import BattleCardGenerator
+
+    body = await req.json()
+    bc_request = BattleCardRequest(**body)
+
+    generator = BattleCardGenerator()
+
+    def event_stream():
+        try:
+            for event_type, data in generator.generate(bc_request):
+                if event_type == "status":
+                    yield f"event: status\ndata: {json.dumps(data)}\n\n"
+                elif event_type == "report":
+                    yield f"event: report\ndata: {json.dumps(data.model_dump(mode='json'), default=str)}\n\n"
+                elif event_type == "error":
+                    yield f"event: error\ndata: {json.dumps(data)}\n\n"
+            yield "event: done\ndata: {}\n\n"
+        except Exception as e:
+            logger.exception("Battle card generation failed: %s", e)
+            yield f"event: error\ndata: {json.dumps({'detail': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.post("/api/battlecard/render")
+async def api_battlecard_render(req: Request):
+    """Render a battle card report as HTML."""
+    from webapp.battlecard.models import BattleCardReport
+    from webapp.battlecard.report_renderer import render_html
+
+    body = await req.json()
+    report = BattleCardReport(**body)
+    html_content = render_html(report)
+    return HTMLResponse(content=html_content)
+
+
+@app.get("/api/battlecard/competitors")
+async def api_battlecard_competitors():
+    """Return available competitors for battle card generation."""
+    competitors = []
+    comp_dir = PROJECT_ROOT / "config" / "competitors"
+    if comp_dir.exists():
+        for f in comp_dir.glob("*.json"):
+            try:
+                data = json.loads(f.read_bytes())
+                if not data.get("is_self", False):
+                    competitors.append({
+                        "id": data.get("short_name", f.stem),
+                        "name": data.get("name", f.stem),
+                    })
+            except Exception:
+                pass
+    return {"competitors": competitors}
