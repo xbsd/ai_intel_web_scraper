@@ -217,24 +217,47 @@ class Chunker:
 
     def chunk_records(self, records: list[SourceRecord]) -> list[RawChunk]:
         """Chunk a batch of SourceRecords."""
+        import time as _time
         all_chunks = []
         total = len(records)
-        log_interval = max(1, total // 10)  # Log every ~10%
+        log_interval = max(1, total // 20)  # Log every ~5%
+        slow_threshold = 2.0  # seconds — flag records slower than this
+        start_all = _time.perf_counter()
 
         for i, record in enumerate(records):
+            text_len = len(record.text) if record.text else 0
+            if text_len > 50000 or i == 282:  # Log big records and the known stall point
+                logger.info(
+                    "  → START record %d/%d: %s type=%s text_len=%d title='%.80s'",
+                    i + 1, total, record.origin, record.source_type.value, text_len, record.title or "",
+                )
+            t0 = _time.perf_counter()
             chunks = self.chunk_record(record)
+            elapsed = _time.perf_counter() - t0
             all_chunks.extend(chunks)
 
-            if (i + 1) % log_interval == 0 or (i + 1) == total:
-                logger.info(
-                    "Chunking progress: %d/%d records (%.0f%%), %d chunks so far",
-                    i + 1, total, (i + 1) / total * 100, len(all_chunks),
+            if elapsed > slow_threshold:
+                text_len = len(record.text) if record.text else 0
+                logger.warning(
+                    "SLOW RECORD %d/%d: %.1fs — %s type=%s text_len=%d chunks=%d title='%.80s'",
+                    i + 1, total, elapsed, record.origin, record.source_type.value,
+                    text_len, len(chunks), record.title or "",
                 )
 
+            if (i + 1) % log_interval == 0 or (i + 1) == total:
+                wall = _time.perf_counter() - start_all
+                rate = (i + 1) / max(wall, 0.001)
+                eta = (total - i - 1) / max(rate, 0.001)
+                logger.info(
+                    "Chunking progress: %d/%d records (%3.0f%%), %d chunks, %.1fs elapsed, ETA %.0fs",
+                    i + 1, total, (i + 1) / total * 100, len(all_chunks), wall, eta,
+                )
+
+        total_time = _time.perf_counter() - start_all
         logger.info(
-            "Chunked %d records into %d chunks (avg %.1f chunks/record)",
+            "Chunked %d records into %d chunks (avg %.1f chunks/record) in %.1fs",
             len(records), len(all_chunks),
-            len(all_chunks) / max(len(records), 1),
+            len(all_chunks) / max(len(records), 1), total_time,
         )
         return all_chunks
 
@@ -557,6 +580,9 @@ class Chunker:
             chunk_tokens = tokens[start:end]
             chunk_text = encoder.decode(chunk_tokens)
             chunks.append(chunk_text)
+            # If we've reached the end, stop
+            if end >= len(tokens):
+                break
             start = end - self.overlap_tokens  # overlap
 
         return chunks

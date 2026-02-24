@@ -43,11 +43,17 @@ PROCESSED_DIR = DATA_DIR / "processed"
 GENERATED_DIR = DATA_DIR / "generated"
 REVIEWED_DIR = DATA_DIR / "reviewed"
 
+class _FlushHandler(logging.StreamHandler):
+    """StreamHandler that flushes after every emit (prevents buffering delays)."""
+    def emit(self, record):
+        super().emit(record)
+        self.flush()
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
-        logging.StreamHandler(sys.stdout),
+        _FlushHandler(sys.stdout),
         logging.FileHandler(PROJECT_ROOT / "pipeline.log"),
     ],
 )

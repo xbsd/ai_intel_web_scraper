@@ -255,6 +255,66 @@ class VectorStore:
 
         return stats
 
+    def get_detailed_stats(
+        self,
+        filter_field: Optional[str] = None,
+        filter_value: Optional[str] = None,
+    ) -> dict:
+        """Get detailed statistics with per-field breakdowns.
+
+        Args:
+            filter_field: Optional metadata field to filter by (e.g. 'competitor').
+            filter_value: Value to filter on (e.g. 'clickhouse').
+
+        Returns aggregated counts by competitor, source_type, primary_topic,
+        and credibility for the source collection.
+        """
+        result = {"collections": {}}
+
+        for name in [COLLECTION_SOURCE, COLLECTION_COMPARISONS]:
+            try:
+                col = self.client.get_collection(name)
+                count = col.count()
+                col_stats = {"count": count, "breakdowns": {}}
+
+                if count > 0:
+                    # Fetch all metadata (no documents or embeddings for speed)
+                    all_data = col.get(include=["metadatas"])
+                    metadatas = all_data.get("metadatas", [])
+
+                    # Apply optional drill-down filter
+                    if filter_field and filter_value:
+                        metadatas = [
+                            m for m in metadatas
+                            if m.get(filter_field, "") == filter_value
+                        ]
+                        col_stats["filtered_count"] = len(metadatas)
+
+                    # Aggregate by key fields
+                    fields = ["competitor", "source_type", "primary_topic", "credibility"]
+                    for field in fields:
+                        counts = {}
+                        for meta in metadatas:
+                            val = meta.get(field, "unknown")
+                            if not val:
+                                val = "unknown"
+                            counts[val] = counts.get(val, 0) + 1
+                        # Sort by count descending
+                        col_stats["breakdowns"][field] = dict(
+                            sorted(counts.items(), key=lambda x: -x[1])
+                        )
+
+                    # Metadata key list from first record
+                    if metadatas:
+                        col_stats["metadata_keys"] = sorted(metadatas[0].keys())
+
+                result["collections"][name] = col_stats
+            except Exception as e:
+                logger.warning("Failed to get detailed stats for %s: %s", name, e)
+                result["collections"][name] = {"count": 0, "breakdowns": {}}
+
+        return result
+
     def delete_collection(self, name: str):
         """Delete a collection (for re-ingestion)."""
         try:

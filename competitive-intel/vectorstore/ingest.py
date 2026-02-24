@@ -14,6 +14,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -37,6 +38,7 @@ def load_all_records(target: str) -> list[SourceRecord]:
     """Load all raw JSON records for a given target (competitor short name)."""
     import orjson
 
+    t0 = time.perf_counter()
     target_dir = RAW_DIR / target
     if not target_dir.exists():
         logger.warning("No raw data directory for '%s'", target)
@@ -44,8 +46,10 @@ def load_all_records(target: str) -> list[SourceRecord]:
 
     records: list[SourceRecord] = []
     json_files = sorted(target_dir.rglob("*.json"))
+    skipped = 0
 
     for jf in json_files:
+        file_count_before = len(records)
         try:
             data = orjson.loads(jf.read_bytes())
             items = data if isinstance(data, list) else [data]
@@ -54,11 +58,18 @@ def load_all_records(target: str) -> list[SourceRecord]:
                     record = SourceRecord(**item)
                     records.append(record)
                 except Exception as e:
+                    skipped += 1
                     logger.debug("Skipping invalid record in %s: %s", jf.name, e)
         except Exception as e:
             logger.error("Failed to load %s: %s", jf, e)
+        file_count = len(records) - file_count_before
+        logger.info("  [load] %s → %d records", jf.relative_to(RAW_DIR), file_count)
 
-    logger.info("Loaded %d records for '%s' from %d files", len(records), target, len(json_files))
+    elapsed = time.perf_counter() - t0
+    logger.info(
+        "Loaded %d records for '%s' from %d files (skipped %d invalid) in %.1fs",
+        len(records), target, len(json_files), skipped, elapsed,
+    )
     return records
 
 
@@ -82,35 +93,58 @@ def ingest_target(
 
     Returns a stats dict: {records_loaded, chunks_created, chunks_stored}.
     """
+    pipeline_start = time.perf_counter()
+
     # 1. Load raw records
+    logger.info("[%s] STEP 1/4: Loading raw records...", target)
+    t0 = time.perf_counter()
     records = load_all_records(target)
+    load_elapsed = time.perf_counter() - t0
     if not records:
         logger.warning("No records to ingest for '%s'", target)
         return {"records_loaded": 0, "chunks_created": 0, "chunks_stored": 0}
+    logger.info("[%s] STEP 1/4 done: %d records loaded in %.1fs", target, len(records), load_elapsed)
 
     # 2. Chunk
-    logger.info("Chunking %d records for '%s'...", len(records), target)
+    logger.info("[%s] STEP 2/4: Chunking %d records...", target, len(records))
+    t0 = time.perf_counter()
     chunks = chunker.chunk_records(records)
+    chunk_elapsed = time.perf_counter() - t0
 
     if not chunks:
         logger.warning("No chunks produced for '%s'", target)
         return {"records_loaded": len(records), "chunks_created": 0, "chunks_stored": 0}
+    logger.info("[%s] STEP 2/4 done: %d chunks in %.1fs (%.0f chunks/sec)", target, len(chunks), chunk_elapsed, len(chunks) / max(chunk_elapsed, 0.001))
 
     # 3. Embed
-    logger.info("Generating embeddings for %d chunks...", len(chunks))
+    logger.info("[%s] STEP 3/4: Generating embeddings for %d chunks...", target, len(chunks))
+    t0 = time.perf_counter()
     texts = [chunk.text for chunk in chunks]
     embeddings = embedder.embed(texts)
+    embed_elapsed = time.perf_counter() - t0
+    logger.info("[%s] STEP 3/4 done: %d embeddings in %.1fs (%.1f chunks/sec)", target, len(embeddings), embed_elapsed, len(embeddings) / max(embed_elapsed, 0.001))
 
     # 4. Store
-    logger.info("Storing %d chunks in ChromaDB...", len(chunks))
+    logger.info("[%s] STEP 4/4: Storing %d chunks in ChromaDB...", target, len(chunks))
+    t0 = time.perf_counter()
     stored = store.upsert_source_chunks(chunks, embeddings)
+    store_elapsed = time.perf_counter() - t0
+    logger.info("[%s] STEP 4/4 done: %d chunks stored in %.1fs", target, stored, store_elapsed)
 
+    total_elapsed = time.perf_counter() - pipeline_start
     stats = {
         "records_loaded": len(records),
         "chunks_created": len(chunks),
         "chunks_stored": stored,
+        "timings": {
+            "load_s": round(load_elapsed, 1),
+            "chunk_s": round(chunk_elapsed, 1),
+            "embed_s": round(embed_elapsed, 1),
+            "store_s": round(store_elapsed, 1),
+            "total_s": round(total_elapsed, 1),
+        },
     }
-    logger.info("Ingestion complete for '%s': %s", target, stats)
+    logger.info("[%s] Ingestion complete in %.1fs: %s", target, total_elapsed, stats)
     return stats
 
 
@@ -146,14 +180,18 @@ def ingest_all(
         logger.info("Running in incremental mode (existing vectors preserved). Use --reset to wipe first.")
 
     all_stats: dict[str, dict] = {}
+    overall_start = time.perf_counter()
 
-    for target in targets:
+    for i, target in enumerate(targets, 1):
         logger.info("=" * 60)
-        logger.info("INGESTING: %s", target)
+        logger.info("INGESTING: %s (%d/%d targets)", target, i, len(targets))
         logger.info("=" * 60)
 
         stats = ingest_target(target, chunker, embedder, store)
         all_stats[target] = stats
+
+    overall_elapsed = time.perf_counter() - overall_start
+    logger.info("All targets completed in %.1fs", overall_elapsed)
 
     # Print summary
     _print_summary(all_stats, store)
@@ -175,6 +213,9 @@ def _print_summary(all_stats: dict[str, dict], store: VectorStore):
         print(f"    Records loaded:  {stats['records_loaded']}")
         print(f"    Chunks created:  {stats['chunks_created']}")
         print(f"    Chunks stored:   {stats['chunks_stored']}")
+        timings = stats.get("timings", {})
+        if timings:
+            print(f"    Timings:  load={timings.get('load_s', '?')}s  chunk={timings.get('chunk_s', '?')}s  embed={timings.get('embed_s', '?')}s  store={timings.get('store_s', '?')}s  total={timings.get('total_s', '?')}s")
         total_records += stats["records_loaded"]
         total_chunks += stats["chunks_created"]
         total_stored += stats["chunks_stored"]

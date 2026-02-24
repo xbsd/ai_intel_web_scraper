@@ -1,0 +1,288 @@
+[
+  {
+    "id": "kx-github_issue-d6052cdb80fc",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/257",
+    "title": "Strings for server connections limited to 64 characters",
+    "text": "# Strings for server connections limited to 64 characters\n\nThe plugin limits the character strings to 64 characters in length, this causes issues when trying to connect to a kdb instance managed by Amazon FinSpace with Managed kdb Insights. The strings for serverName is over 64 characters, and the password is a very long signed URL\n\n## Top Comments\n\n**nfarrell-kx**: Thanks for the feedback, we have raised a ticket internally to implement this\n\n---\n\n**ecmel**: @vsaulys  Raised the limit to 1024 characters. Will this be enough?\n\n---\n\n**vsaulys**: Will need 2048.\r\n\r\nThe signed connection string can be up to 2048 as per docs:\r\n\r\nhttps://docs.aws.amazon.com/finspace/latest/management-api/API_GetKxConnectionString.html￼ \r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 11, 2024, at 6:41 AM, Ecmel Ercan ***@***.***> wrote:\r\n> \r\n> \r\n> @vsaulys <https://github.com/vsaulys> Raised the limit to 1024 characters. Will this be enough?\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/257#issuecomment-1988130186>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3QSMVSTHPNVT4YIEVTYXWC5VAVCNFSM6AAAAABEJP4Y3CVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBYGEZTAMJYGY>.\r\n> You are receiving this because you were mentioned.\r\n> \r\n\r\n\n\n---\n\n**ecmel**: Increased to 2048\n\n---\n\n**vsaulys**: ThanksIs there an eta on when it will be available from virtual studio marketplace?Vincent SaulysOn Mar 11, 2024, at 8:31 AM, Ecmel Ercan ***@***.***> wrote:﻿\r\nIncreased to 2048\r\n\r\n—Reply to this email directly, view it on GitHub, or unsubscribe.You are receiving this because you were mentioned.Message ID: ***@***.***>\n\n---\n\n**ecmel**: This will be in release 1.4 hopefully this week.\n\n---\n\n**ecmel**: @vsaulys  This is available in version 1.4 from marketplace.\n\n---\n\n**vsaulys**: Excellent!\r\n\r\nThanks for the update\r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 13, 2024, at 1:41 PM, Ecmel Ercan ***@***.***> wrote:\r\n> \r\n> \r\n> @vsaulys <https://github.com/vsaulys> This is available in version 1.4 from marketplace.\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/257#issuecomment-1995135483>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3UJUUIP6OSXZ6EXOWTYYCFT7AVCNFSM6AAAAABEJP4Y3CVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOJVGEZTKNBYGM>.\r\n> You are receiving this because you were mentioned.\r\n> \r\n\r\n\n\n---\n\n**ecmel**: @vsaulys  Hello, we have implemented [custom authentication](https://github.com/KxSystems/kx-vscode-auth) feature so you can now automate your login flow for your use case.\n\nCheckout [Portier example](https://github.com/KxSystems/kx-vscode-auth/tree/portier) for token based use case.",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "neutral",
+    "word_count": 330,
+    "metadata": {
+      "issue_number": 257,
+      "state": "closed",
+      "labels": [],
+      "comments_count": 9,
+      "created_at": "2024-03-06T17:37:39Z",
+      "updated_at": "2025-06-29T08:08:39Z",
+      "closed_at": "2024-03-13T17:40:57Z",
+      "author": "vsaulys",
+      "top_comments": [
+        "**nfarrell-kx**: Thanks for the feedback, we have raised a ticket internally to implement this",
+        "**ecmel**: @vsaulys  Raised the limit to 1024 characters. Will this be enough?",
+        "**vsaulys**: Will need 2048.\r\n\r\nThe signed connection string can be up to 2048 as per docs:\r\n\r\nhttps://docs.aws.amazon.com/finspace/latest/management-api/API_GetKxConnectionString.html￼ \r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 11, 2024, at 6:41 AM, Ecmel Ercan ***@***.***> wrote:\r\n> \r\n> \r\n> @vsaulys <https://github.com/vsaulys> Raised the limit to 1024 characters. Will this be enough?\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/257#issuecomment-1988130186>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3QSMVSTHPNVT4YIEVTYXWC5VAVCNFSM6AAAAABEJP4Y3CVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBYGEZTAMJYGY>.\r\n> You are receiving this because you were mentioned.\r\n> \r\n\r\n",
+        "**ecmel**: Increased to 2048",
+        "**vsaulys**: ThanksIs there an eta on when it will be available from virtual studio marketplace?Vincent SaulysOn Mar 11, 2024, at 8:31 AM, Ecmel Ercan ***@***.***> wrote:﻿\r\nIncreased to 2048\r\n\r\n—Reply to this email directly, view it on GitHub, or unsubscribe.You are receiving this because you were mentioned.Message ID: ***@***.***>"
+      ],
+      "is_feature_request": false,
+      "is_bug": false
+    }
+  },
+  {
+    "id": "kx-github_issue-17db33ecb837",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/258",
+    "title": "How does one build a local version of the extension?",
+    "text": "# How does one build a local version of the extension?\n\nThere is no documentation on this on the project page, and there appears to be an issue when following standard build steps (npm install, npm run package). Run package returns a list of errors about missing dependancies for esbuild:\r\n\r\n(base) vssaulys@f84d898f5e35 kx-vscode % npm run package\r\n\r\n> kdb@1.3.0 package\r\n> npx vsce package\r\n\r\nExecuting prepublish script 'npm run vscode:prepublish'...\r\n\r\n> kdb@1.3.0 vscode:prepublish\r\n> npm run -S esbuild-base -- --minify --keep-names\r\n\r\n> kdb@1.3.0 esbuild-base\r\n> rimraf out && node ./esbuild.js \"--minify\" \"--keep-names\"\r\n\r\nextension build complete\r\nserver build complete\r\nbuild complete\r\n ERROR  Command failed: npm list --production --parseable --depth=99999 --loglevel=error\r\nnpm ERR! code ELSPROBLEMS\r\nnpm ERR! missing: @esbuild/aix-ppc64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/android-arm@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/android-arm64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/android-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/darwin-arm64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/freebsd-arm64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/freebsd-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-arm@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-arm64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-ia32@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-loong64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-mips64el@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-ppc64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-riscv64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-s390x@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/linux-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/netbsd-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/openbsd-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/sunos-x64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/win32-arm64@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/win32-ia32@0.19.12, required by esbuild@0.19.12\r\nnpm ERR! missing: @esbuild/win32-x64@0.19.12, required by esbuild@0.19.12\r\n\r\nnpm ERR! A complete log of this run can be found in:\r\nnpm ERR!     /Users/vssaulys/.npm/_logs/2024-03-06T17_34_18_068Z-debug.log\r\n\r\n\n\n## Top Comments\n\n**lysliu**: I build it out on macbook pro with M1 processor\r\n```\r\ngit clone git@github.com:KxSystems/kx-vscode.git\r\ncd kx-vscode\r\nnpm run package\r\nbrew search npm\r\nbrew install npm\r\nbrew update\r\nnpm run package\r\nnpm install -g npm@10.5.0\r\nnpm run package\r\nnpm install -g rimraf\\n\r\nnpm run package\r\nnpm install esbuild\\n\r\n```\r\nafter clone the code and install dependencies, get it built out\r\n```\r\n➜  kx-vscode git:(main) ✗ npm run package\r\n\r\n> kdb@1.3.0 package\r\n> npx vsce package\r\n\r\n(node:60767) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.\r\n(Use `node --trace-deprecation ...` to show where the warning was created)\r\nExecuting prepublish script 'npm run vscode:prepublish'...\r\n\r\n> kdb@1.3.0 vscode:prepublish\r\n> npm run -S esbuild-base -- --minify --keep-names\r\n\r\n\r\n> kdb@1.3.0 esbuild-base\r\n> rimraf out && node ./esbuild.js --minify --keep-names\r\n\r\nextension build complete\r\nserver build complete\r\nbuild complete\r\n DONE  Packaged: /Users/liuyansong/kx-vscode/kdb-1.3.0.vsix (84 files, 2.86MB)\r\n```\n\n---\n\n**nfarrell-kx**: Was this your first time building the project, could you try deleting `node_modules`?\r\n`npm install` and `npm run package` should work as build steps\n\n---\n\n**vsaulys**: This is my first project, and for the life of me could not figure things out.\r\n\r\nLast issue I ran into was rpm install was simply having, I then just rebooted my machine (because that is the default check? Did you turn it on and off again?)\r\n\r\nAnyway, rebooting, and rpm build package just WORKED? On my Mac (M2, Sonoma).\r\n\r\nWas able to also build with what I think the fix (src/validators/kdbValidator.ts), just increase the string length checks to 512 from 64.\r\n\r\nAlso modified the tests to check a longer invalid string (513 characters), change was like this in test/suit/validators.test.ts):\r\n\r\n  it(\"Should return fail for server password that is outside the size limits\", () => {\r\n    const result = validateServerPassword(\r\n      //\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\"\r\n      \"t\".repeat(513),\r\n    );\r\n    assert.strictEqual(\r\n      result,\r\n      \"Input value must be between 1 and 512 alphanumeric characters in length.\",\r\n      \"Input was outside the size limits.\",\r\n    );\r\n  });\r\n\r\n\r\n\r\nI’ve attached the modified files, btw, “rpm run test” is failing now, not clear why?\r\n\r\n(base) ***@***.*** kx-vscode % npm run test\r\n\r\n> ***@***.*** test\r\n> tsc -p ./test && node ./out/test/runTest.js\r\n\r\nerror TS2688: Cannot find type definition file for 'sinonjs__fake-timers'.\r\n  The file is in the program because:\r\n    Entry point for implicit type library 'sinonjs__fake-timers'\r\n\r\n\r\nFound 1 error.\r\n\r\n\r\nAlso attaching the modified files, it was an easy fix.\r\n\r\n￼￼\r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 7, 2024, at 10:00 AM, nfarrell-kx ***@***.***> wrote:\r\n> \r\n> \r\n> Was this your first time building the project, could you try deleting node_modules?\r\n> npm install and npm run package should work as build steps\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/258#issuecomment-1983691624>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3UEMDSAIL7ZVPOL3DTYXB6JNAVCNFSM6AAAAABEJP72JOVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBTGY4TCNRSGQ>.\r\n> You are receiving this because you authored the thread.\r\n> \r\n\r\n\n\n---\n\n**vsaulys**: I have found the core issue.\r\n\r\nWhen debugging TLS connections in q, I had configured and set local SSL certs, they apparently where the root cause to my networking related issues.\r\n\r\nThought I would pass this along, it was my having set these:\r\nSSL_CERT_FILE\r\nSSL_KEY_FILE\r\n\r\nI have since moved to using the KX named version of these (e.g. KX_ SSL_CERT_FILE) which admittedly I should have done in the first place.\r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 7, 2024, at 10:00 AM, nfarrell-kx ***@***.***> wrote:\r\n> \r\n> \r\n> Was this your first time building the project, could you try deleting node_modules?\r\n> npm install and npm run package should work as build steps\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/258#issuecomment-1983691624>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3UEMDSAIL7ZVPOL3DTYXB6JNAVCNFSM6AAAAABEJP72JOVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBTGY4TCNRSGQ>.\r\n> You are receiving this because you authored the thread.\r\n> \r\n\r\n",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "neutral",
+    "word_count": 881,
+    "metadata": {
+      "issue_number": 258,
+      "state": "closed",
+      "labels": [],
+      "comments_count": 4,
+      "created_at": "2024-03-06T17:39:43Z",
+      "updated_at": "2024-04-09T11:08:43Z",
+      "closed_at": "2024-04-09T11:08:43Z",
+      "author": "vsaulys",
+      "top_comments": [
+        "**lysliu**: I build it out on macbook pro with M1 processor\r\n```\r\ngit clone git@github.com:KxSystems/kx-vscode.git\r\ncd kx-vscode\r\nnpm run package\r\nbrew search npm\r\nbrew install npm\r\nbrew update\r\nnpm run package\r\nnpm install -g npm@10.5.0\r\nnpm run package\r\nnpm install -g rimraf\\n\r\nnpm run package\r\nnpm install esbuild\\n\r\n```\r\nafter clone the code and install dependencies, get it built out\r\n```\r\n➜  kx-vscode git:(main) ✗ npm run package\r\n\r\n> kdb@1.3.0 package\r\n> npx vsce package\r\n\r\n(node:60767) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.\r\n(Use `node --trace-deprecation ...` to show where the warning was created)\r\nExecuting prepublish script 'npm run vscode:prepublish'...\r\n\r\n> kdb@1.3.0 vscode:prepublish\r\n> npm run -S esbuild-base -- --minify --keep-names\r\n\r\n\r\n> kdb@1.3.0 esbuild-base\r\n> rimraf out && node ./esbuild.js --minify --keep-names\r\n\r\nextension build complete\r\nserver build complete\r\nbuild complete\r\n DONE  Packaged: /Users/liuyansong/kx-vscode/kdb-1.3.0.vsix (84 files, 2.86MB)\r\n```",
+        "**nfarrell-kx**: Was this your first time building the project, could you try deleting `node_modules`?\r\n`npm install` and `npm run package` should work as build steps",
+        "**vsaulys**: This is my first project, and for the life of me could not figure things out.\r\n\r\nLast issue I ran into was rpm install was simply having, I then just rebooted my machine (because that is the default check? Did you turn it on and off again?)\r\n\r\nAnyway, rebooting, and rpm build package just WORKED? On my Mac (M2, Sonoma).\r\n\r\nWas able to also build with what I think the fix (src/validators/kdbValidator.ts), just increase the string length checks to 512 from 64.\r\n\r\nAlso modified the tests to check a longer invalid string (513 characters), change was like this in test/suit/validators.test.ts):\r\n\r\n  it(\"Should return fail for server password that is outside the size limits\", () => {\r\n    const result = validateServerPassword(\r\n      //\"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\"\r\n      \"t\".repeat(513),\r\n    );\r\n    assert.strictEqual(\r\n      result,\r\n      \"Input value must be between 1 and 512 alphanumeric characters in length.\",\r\n      \"Input was outside the size limits.\",\r\n    );\r\n  });\r\n\r\n\r\n\r\nI’ve attached the modified files, btw, “rpm run test” is failing now, not clear why?\r\n\r\n(base) ***@***.*** kx-vscode % npm run test\r\n\r\n> ***@***.*** test\r\n> tsc -p ./test && node ./out/test/runTest.js\r\n\r\nerror TS2688: Cannot find type definition file for 'sinonjs__fake-timers'.\r\n  The file is in the program because:\r\n    Entry point for implicit type library 'sinonjs__fake-timers'\r\n\r\n\r\nFound 1 error.\r\n\r\n\r\nAlso attaching the modified files, it was an easy fix.\r\n\r\n￼￼\r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 7, 2024, at 10:00 AM, nfarrell-kx ***@***.***> wrote:\r\n> \r\n> \r\n> Was this your first time building the project, could you try deleting node_modules?\r\n> npm install and npm run package should work as build steps\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/258#issuecomment-1983691624>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3UEMDSAIL7ZVPOL3DTYXB6JNAVCNFSM6AAAAABEJP72JOVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBTGY4TCNRSGQ>.\r\n> You are receiving this because you authored the thread.\r\n> \r\n\r\n",
+        "**vsaulys**: I have found the core issue.\r\n\r\nWhen debugging TLS connections in q, I had configured and set local SSL certs, they apparently where the root cause to my networking related issues.\r\n\r\nThought I would pass this along, it was my having set these:\r\nSSL_CERT_FILE\r\nSSL_KEY_FILE\r\n\r\nI have since moved to using the KX named version of these (e.g. KX_ SSL_CERT_FILE) which admittedly I should have done in the first place.\r\n\r\nVincent Saulys\r\n***@***.*** \r\n\r\n\r\n\r\n> On Mar 7, 2024, at 10:00 AM, nfarrell-kx ***@***.***> wrote:\r\n> \r\n> \r\n> Was this your first time building the project, could you try deleting node_modules?\r\n> npm install and npm run package should work as build steps\r\n> \r\n> —\r\n> Reply to this email directly, view it on GitHub <https://github.com/KxSystems/kx-vscode/issues/258#issuecomment-1983691624>, or unsubscribe <https://github.com/notifications/unsubscribe-auth/AATBT3UEMDSAIL7ZVPOL3DTYXB6JNAVCNFSM6AAAAABEJP72JOVHI2DSMVQWIX3LMV43OSLTON2WKQ3PNVWWK3TUHMYTSOBTGY4TCNRSGQ>.\r\n> You are receiving this because you authored the thread.\r\n> \r\n\r\n"
+      ],
+      "is_feature_request": false,
+      "is_bug": false
+    }
+  },
+  {
+    "id": "kx-github_issue-c1704fb30c7a",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/440",
+    "title": "Configuring the linter",
+    "text": "# Configuring the linter\n\nHey,\r\n\r\nI'm currently running VSCode 1.94.0, and 1.7.0 of the kdb extension.  I have the linter enabled in extension options, and I'm able to get issues appearing in the \"Problems\" tab, so that's all good.\r\n\r\nThe issue I have is I can't configure the linter.  I need to switch off some rules, like for example UNUSED_VAR.  So far I've tried commenting in files, for example:\r\n\r\n```\r\n// @qlintrule UNUSED_VAR : false\r\n```\r\n\r\nbut it seems to be ignoring these.  How can I configure linting?  Can I add a file, where should it be placed for it to pick it up etc.?\n\n## Top Comments\n\n**ecmel**: Hi, have you installed qlint https://code.kx.com/developer/libraries/  If installed extension will support it.\r\nCurrently the built in linter does not have any configuration options it is on or off.\r\n\n\n---\n\n**picoDoc**: ah right, so there's no way to configure the built in linter in the VSCode extension?  i.e. the Problems that appear like:\r\n\r\n![image](https://github.com/user-attachments/assets/ed5278d2-c7bc-4031-a427-d535a42d6ff0)\r\n\r\nIs there any plan to add this as a feature?  I'm not so interested in having to run the linter manually outside of VSCode\n\n---\n\n**ecmel**: qlint is also well integrated with the extension if you prefer it. Regarding the built in linter we are planning to add support for more config options.",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "neutral",
+    "word_count": 215,
+    "metadata": {
+      "issue_number": 440,
+      "state": "open",
+      "labels": [
+        "enhancement"
+      ],
+      "comments_count": 3,
+      "created_at": "2024-10-15T13:54:23Z",
+      "updated_at": "2024-10-16T08:51:23Z",
+      "closed_at": null,
+      "author": "picoDoc",
+      "top_comments": [
+        "**ecmel**: Hi, have you installed qlint https://code.kx.com/developer/libraries/  If installed extension will support it.\r\nCurrently the built in linter does not have any configuration options it is on or off.\r\n",
+        "**picoDoc**: ah right, so there's no way to configure the built in linter in the VSCode extension?  i.e. the Problems that appear like:\r\n\r\n![image](https://github.com/user-attachments/assets/ed5278d2-c7bc-4031-a427-d535a42d6ff0)\r\n\r\nIs there any plan to add this as a feature?  I'm not so interested in having to run the linter manually outside of VSCode",
+        "**ecmel**: qlint is also well integrated with the extension if you prefer it. Regarding the built in linter we are planning to add support for more config options."
+      ],
+      "is_feature_request": true,
+      "is_bug": false
+    }
+  },
+  {
+    "id": "kx-github_issue-e7e97847c229",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/656",
+    "title": "[Bug]: Saved connections missing after update to 1.13.0",
+    "text": "# [Bug]: Saved connections missing after update to 1.13.0\n\n### Contact Details\n\nsean.mullane@quantitative.com\n\n### What happened?\n\nThe last time I restarted my VSCode app I found all the saved KDB connections in the KX extension are missing. I had ~60 connections saved and all seem to have been deleted. This coincides with the recent auto-update to 1.13.0 which was released last week on 7/31.\n\nThe query history in the KX tab is also empty now.\n\n\nMy VSCode build is below:\n\nVersion: 1.96.3 (system setup)\nCommit: 91fbdddc47bc9c09064bf7acf133d22631cbf083\nDate: 2025-01-09T18:14:09.060Z\nElectron: 32.2.6\nElectronBuildId: 10629634\nChromium: 128.0.6613.186\nNode.js: 20.18.1\nV8: 12.8.374.38-electron.0\nOS: Windows_NT x64 10.0.19045\n\n### Version\n\n1.13.0\n\n### Relevant log output\n\n```shell\n\n```\n\n## Top Comments\n\n**Philip-Carneiro-KX**: Hi @seanmullane, I did a fix for it and we are preparing a release of 1.13.1 with the fix https://github.com/KxSystems/kx-vscode/pull/655\n\n---\n\n**Philip-Carneiro-KX**: Fixed with release 1.13.1",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "negative",
+    "word_count": 141,
+    "metadata": {
+      "issue_number": 656,
+      "state": "closed",
+      "labels": [
+        "bug"
+      ],
+      "comments_count": 2,
+      "created_at": "2025-08-05T14:57:20Z",
+      "updated_at": "2025-08-06T08:49:38Z",
+      "closed_at": "2025-08-06T08:49:38Z",
+      "author": "seanmullane",
+      "top_comments": [
+        "**Philip-Carneiro-KX**: Hi @seanmullane, I did a fix for it and we are preparing a release of 1.13.1 with the fix https://github.com/KxSystems/kx-vscode/pull/655",
+        "**Philip-Carneiro-KX**: Fixed with release 1.13.1"
+      ],
+      "is_feature_request": false,
+      "is_bug": true
+    }
+  },
+  {
+    "id": "kx-github_issue-6f1a18575629",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/457",
+    "title": "Pull out the language server into a standalone language server?",
+    "text": "# Pull out the language server into a standalone language server?\n\nWhy go through the effort of making a language server only to bake it into an extension for a single editor?\n\n## Top Comments\n\n**ecmel**: @benlubas Thank you for your comment. We may split the language server into a separate package when it matures enough.\n\n---\n\n**statquant**: +1 on this request, why wait ? People would be happy to contribute and there is little consideration of \"architecture\"",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "neutral",
+    "word_count": 78,
+    "metadata": {
+      "issue_number": 457,
+      "state": "open",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "comments_count": 2,
+      "created_at": "2024-11-14T13:56:05Z",
+      "updated_at": "2025-02-21T08:40:35Z",
+      "closed_at": null,
+      "author": "benlubas",
+      "top_comments": [
+        "**ecmel**: @benlubas Thank you for your comment. We may split the language server into a separate package when it matures enough.",
+        "**statquant**: +1 on this request, why wait ? People would be happy to contribute and there is little consideration of \"architecture\""
+      ],
+      "is_feature_request": true,
+      "is_bug": false
+    }
+  },
+  {
+    "id": "kx-github_issue-e15da1b27607",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/729",
+    "title": "[Bug]: Code is indexed only within one opened q file. Cross references to the definitions and usage in other q files in workspace do not work",
+    "text": "# [Bug]: Code is indexed only within one opened q file. Cross references to the definitions and usage in other q files in workspace do not work\n\n### Contact Details\n\nalexey.moshchenikov@db.com\n\n### What happened?\n\nWith the recent versions installations stating from  v1.14.0 crossreferences of definitions and usage are not working across q files in workspace.\nThe navigation works only within currently opened q file.\n\n### Version\n\n1.16.1\n\n### Relevant log output\n\n```shell\nN/A\n\nPlease help to identify what exact part of logs available within VS Code will be useful to resolve the bug\n```",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "negative",
+    "word_count": 94,
+    "metadata": {
+      "issue_number": 729,
+      "state": "open",
+      "labels": [
+        "bug"
+      ],
+      "comments_count": 1,
+      "created_at": "2026-01-28T18:18:55Z",
+      "updated_at": "2026-02-05T12:11:55Z",
+      "closed_at": null,
+      "author": "amoshche",
+      "top_comments": [],
+      "is_feature_request": false,
+      "is_bug": true
+    }
+  },
+  {
+    "id": "kx-github_issue-ecd58f2ece2a",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/492",
+    "title": "KX Visual Studio Code login  An error occurred while signing in:  while being successful",
+    "text": "# KX Visual Studio Code login  An error occurred while signing in:  while being successful\n\nWhen logging into an insights instance via Vscode, a login menu will appear. Once the user confirms their login credentials, a \"logging in\" page will load. Eventually, the following screenshot will appear. \r\n![image](https://github.com/user-attachments/assets/8f0f364b-b4fa-4fe7-81bf-478b004b6b15)\r\n\r\nThis page is a contradiction as I have successfully logged in but also received an error at the same time. The extension works fine, but a clearer message should be displayed. ",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "negative",
+    "word_count": 79,
+    "metadata": {
+      "issue_number": 492,
+      "state": "closed",
+      "labels": [
+        "bug"
+      ],
+      "comments_count": 1,
+      "created_at": "2025-01-09T20:18:38Z",
+      "updated_at": "2026-01-27T13:06:23Z",
+      "closed_at": "2026-01-27T13:06:23Z",
+      "author": "acheung12",
+      "top_comments": [],
+      "is_feature_request": false,
+      "is_bug": true
+    }
+  },
+  {
+    "id": "kx-github_issue-bdd7ce3615ac",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/382",
+    "title": "Display of keyed tables broken",
+    "text": "# Display of keyed tables broken\n\nIt looks like the extension cannot display keyed tables:\r\n\r\n```([sym: `a`b`c] val:1 2 3)```\r\n\r\nOutput tab:\r\n\r\nsym| val\r\n---| ---\r\na  | 1  \r\nb  | 2  \r\nc  | 3  \r\n\r\nKDB Results tab:\r\n\r\n0|1|2\r\n---|---|---\r\n[object Object]|[object Object]|[object Object]\r\n[object Object]|[object Object]|[object Object]",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "negative",
+    "word_count": 48,
+    "metadata": {
+      "issue_number": 382,
+      "state": "closed",
+      "labels": [
+        "bug"
+      ],
+      "comments_count": 1,
+      "created_at": "2024-07-22T13:00:57Z",
+      "updated_at": "2024-10-21T08:29:26Z",
+      "closed_at": "2024-10-21T08:29:26Z",
+      "author": "ConorForgie",
+      "top_comments": [],
+      "is_feature_request": false,
+      "is_bug": true
+    }
+  },
+  {
+    "id": "kx-github_issue-9d6b0886fb14",
+    "origin": "kx",
+    "source_type": "github_issue",
+    "url": "https://github.com/KxSystems/kx-vscode/issues/227",
+    "title": "Can't create a connection",
+    "text": "# Can't create a connection\n\nTrying to follow the walkthrough, clicking Add Connection appears to do nothing, but clicking Add Connection in the sidebar under 'Connections' throws the following error.\r\n\r\n![image](https://github.com/KxSystems/kx-vscode/assets/126584021/65634194-d95d-4421-acca-41614387f1eb)\r\n",
+    "scraped_date": "2026-02-22",
+    "content_date": null,
+    "topics": [],
+    "subtopics": [],
+    "credibility": "community",
+    "sentiment": "neutral",
+    "word_count": 31,
+    "metadata": {
+      "issue_number": 227,
+      "state": "closed",
+      "labels": [],
+      "comments_count": 1,
+      "created_at": "2024-01-09T17:26:53Z",
+      "updated_at": "2024-01-09T17:39:44Z",
+      "closed_at": "2024-01-09T17:39:44Z",
+      "author": "jturcottekx",
+      "top_comments": [],
+      "is_feature_request": false,
+      "is_bug": false
+    }
+  }
+]

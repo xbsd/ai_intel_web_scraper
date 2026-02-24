@@ -12,14 +12,16 @@ import os
 import time
 from typing import Optional
 
-from openai import OpenAI
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import tiktoken
+from openai import BadRequestError, OpenAI
+from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "text-embedding-3-small"
 DEFAULT_DIMENSIONS = 1536
-MAX_BATCH_SIZE = 512  # conservative; API supports 2048 but smaller = more resilient
+MAX_BATCH_SIZE = 256  # OpenAI has 300K token/request limit; smaller batches avoid hitting it
+MAX_TOKENS_PER_TEXT = 8000  # model limit is 8192; leave margin
 
 
 class Embedder:
@@ -34,11 +36,23 @@ class Embedder:
         self.model = model
         self.dimensions = dimensions
         self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        self._encoder = tiktoken.encoding_for_model(model)
+
+    def _truncate_text(self, text: str) -> str:
+        """Truncate text to fit within the embedding model's token limit."""
+        tokens = self._encoder.encode(text)
+        if len(tokens) <= MAX_TOKENS_PER_TEXT:
+            return text
+        logger.warning(
+            "Truncating text from %d to %d tokens (first 60 chars: '%.60s')",
+            len(tokens), MAX_TOKENS_PER_TEXT, text,
+        )
+        return self._encoder.decode(tokens[:MAX_TOKENS_PER_TEXT])
 
     @retry(
         stop=stop_after_attempt(4),
         wait=wait_exponential(multiplier=2, min=2, max=30),
-        retry=retry_if_exception_type(Exception),
+        retry=retry_if_not_exception_type(BadRequestError),
         before_sleep=lambda retry_state: logger.warning(
             "Embedding API retry %d after error: %s",
             retry_state.attempt_number,
@@ -69,28 +83,43 @@ class Embedder:
         if not texts:
             return []
 
+        # Truncate any oversized texts to fit the model's token limit
+        texts = [self._truncate_text(t) for t in texts]
+
         all_embeddings: list[list[float]] = []
         total_batches = (len(texts) + MAX_BATCH_SIZE - 1) // MAX_BATCH_SIZE
+        overall_start = time.time()
 
         for batch_idx in range(total_batches):
             start = batch_idx * MAX_BATCH_SIZE
             end = min(start + MAX_BATCH_SIZE, len(texts))
             batch = texts[start:end]
 
-            if show_progress:
-                logger.info(
-                    "Embedding batch %d/%d (%d texts, cumulative %d/%d)",
-                    batch_idx + 1, total_batches, len(batch), end, len(texts),
-                )
-
+            batch_start = time.time()
             batch_embeddings = self._embed_batch(batch)
+            batch_elapsed = time.time() - batch_start
             all_embeddings.extend(batch_embeddings)
+
+            if show_progress:
+                overall_elapsed = time.time() - overall_start
+                rate = end / max(overall_elapsed, 0.001)
+                eta = (len(texts) - end) / max(rate, 0.001)
+                logger.info(
+                    "Embedding batch %d/%d (%d texts, cumulative %d/%d) — batch %.1fs, elapsed %.1fs, ETA %.0fs",
+                    batch_idx + 1, total_batches, len(batch), end, len(texts),
+                    batch_elapsed, overall_elapsed, eta,
+                )
 
             # Brief pause between batches to stay well within rate limits
             if batch_idx < total_batches - 1:
                 time.sleep(0.5)
 
-        logger.info("Embedded %d texts (%d dimensions each)", len(all_embeddings), self.dimensions)
+        total_elapsed = time.time() - overall_start
+        logger.info(
+            "Embedded %d texts (%d dimensions each) in %.1fs (%.1f texts/sec)",
+            len(all_embeddings), self.dimensions, total_elapsed,
+            len(all_embeddings) / max(total_elapsed, 0.001),
+        )
         return all_embeddings
 
     def embed_single(self, text: str) -> list[float]:
