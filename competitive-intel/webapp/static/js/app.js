@@ -1976,4 +1976,49 @@
       toast.classList.remove("toast--visible");
     }, 3500);
   }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB NAVIGATION
+  // ═════════════════════════════════════════════════════════════
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabBtns = document.querySelectorAll(".tab-nav__btn");
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tabId = btn.dataset.tab;
+
+        // Update buttons
+        tabBtns.forEach(b => b.classList.remove("tab-nav__btn--active"));
+        btn.classList.add("tab-nav__btn--active");
+
+        // Update tab content
+        document.querySelectorAll(".tab-content").forEach(tc => {
+          tc.classList.remove("tab-content--active");
+        });
+        const target = document.getElementById("tab-" + tabId);
+        if (target) target.classList.add("tab-content--active");
+
+        // Toggle chat-specific nav buttons visibility
+        const chatButtons = [
+          document.getElementById("btn-open-ingest"),
+          document.getElementById("btn-open-explorer"),
+          document.getElementById("btn-new-session"),
+          document.getElementById("btn-open-history"),
+          document.getElementById("btn-open-export"),
+        ];
+        const isChatTab = tabId === "chat";
+        chatButtons.forEach(b => {
+          if (b) b.style.display = isChatTab ? "" : "none";
+        });
+        // Show/hide export dropdown parent
+        const exportParent = document.getElementById("btn-open-export")?.parentElement;
+        if (exportParent) exportParent.style.display = isChatTab ? "" : "none";
+      });
+    });
+  });
+
+  // Expose showToast and state for battlecard.js
+  window.__appShowToast = showToast;
+  window.__appState = state;
+  window.__appEscapeHtml = escapeHtml;
 })();

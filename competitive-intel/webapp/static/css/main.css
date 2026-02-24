@@ -2465,3 +2465,449 @@ body {
     display: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TAB NAVIGATION
+   ══════════════════════════════════════════════════════════════ */
+
+.tab-nav {
+  display: flex;
+  gap: 0;
+  background: var(--surface-header);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0 var(--space-6);
+}
+
+.tab-nav__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+
+.tab-nav__btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-nav__btn--active {
+  color: var(--text-inverse);
+  border-bottom-color: var(--accent-primary);
+}
+
+.tab-nav__btn--active:hover {
+  color: var(--text-inverse);
+}
+
+.tab-nav__btn svg {
+  opacity: 0.6;
+}
+
+.tab-nav__btn--active svg {
+  opacity: 1;
+  color: var(--accent-primary);
+}
+
+/* ── Tab Content Panels ── */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content--active {
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BATTLE CARD GENERATOR — LAYOUT
+   ══════════════════════════════════════════════════════════════ */
+
+.bc-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  height: calc(100vh - 90px);
+  overflow: hidden;
+}
+
+/* ── Form Panel (Left) ── */
+
+.bc-form-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-primary);
+  border-right: 1px solid var(--border-secondary);
+  overflow: hidden;
+}
+
+.bc-form-panel__header {
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--border-secondary);
+  background: linear-gradient(135deg, var(--surface-tint-blue), var(--surface-primary));
+}
+
+.bc-form-panel__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.bc-form-panel__subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.bc-form-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+/* ── Form Sections ── */
+
+.bc-section {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.bc-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.bc-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.bc-section__title svg {
+  color: var(--accent-primary);
+}
+
+/* ── Fields ── */
+
+.bc-field {
+  margin-bottom: var(--space-3);
+}
+
+.bc-label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.bc-textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.bc-toggle {
+  margin-bottom: var(--space-3);
+}
+
+/* ── Competitor Multi-Select ── */
+
+.bc-competitor-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bc-competitor-select__loading,
+.bc-competitor-select__empty {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  padding: var(--space-2);
+}
+
+.bc-competitor-chip {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.bc-competitor-chip__input {
+  display: none;
+}
+
+.bc-competitor-chip__label {
+  display: inline-block;
+  padding: 5px 14px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  background: var(--surface-tint-slate);
+  border: 1px solid var(--border-secondary);
+  border-radius: 100px;
+  transition: all 200ms ease-out;
+}
+
+.bc-competitor-chip:hover .bc-competitor-chip__label {
+  border-color: var(--border-strong);
+  background: var(--surface-tint-blue);
+}
+
+.bc-competitor-chip__input:checked + .bc-competitor-chip__label {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+}
+
+/* ── Agent Cards ── */
+
+.bc-agents-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bc-agent-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 10px;
+  background: var(--surface-tint-slate);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+  position: relative;
+}
+
+.bc-agent-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-tint-blue);
+}
+
+.bc-agent-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-primary);
+}
+
+.bc-agent-card:has(.bc-agent-check:checked) {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.bc-agent-card__icon {
+  color: var(--accent-primary);
+  margin-bottom: 6px;
+}
+
+.bc-agent-card__name {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.bc-agent-card__desc {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Action Bar ── */
+
+.bc-actions {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-secondary);
+  background: var(--surface-secondary);
+}
+
+.bc-btn-generate {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.bc-btn-generate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bc-btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: bc-spin 0.8s linear infinite;
+}
+
+@keyframes bc-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BATTLE CARD — REPORT PANEL (Right)
+   ══════════════════════════════════════════════════════════════ */
+
+.bc-report-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-secondary);
+  overflow: hidden;
+}
+
+/* ── Empty State ── */
+
+.bc-report-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--text-tertiary);
+}
+
+.bc-report-empty__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-secondary);
+  margin-top: var(--space-5);
+}
+
+.bc-report-empty__desc {
+  font-size: var(--text-sm);
+  max-width: 360px;
+  margin-top: var(--space-2);
+  line-height: 1.6;
+}
+
+/* ── Progress ── */
+
+.bc-progress {
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.bc-progress__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.bc-progress__bar {
+  width: 100%;
+  max-width: 400px;
+  height: 8px;
+  background: var(--surface-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto var(--space-3);
+}
+
+.bc-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 4px;
+  transition: width 300ms ease-out;
+}
+
+.bc-progress__status {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+/* ── Report Toolbar ── */
+
+.bc-report-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-secondary);
+  background: var(--surface-primary);
+}
+
+.bc-report-toolbar__meta {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+
+/* ── Report iframe ── */
+
+.bc-report-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+}
+
+.bc-report-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BATTLE CARD — RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  .bc-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+  }
+
+  .bc-form-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-secondary);
+    max-height: 50vh;
+  }
+
+  .bc-report-panel {
+    min-height: 50vh;
+  }
+}
+
+@media (max-width: 767px) {
+  .bc-agents-grid {
+    grid-template-columns: 1fr;
+  }
+}
