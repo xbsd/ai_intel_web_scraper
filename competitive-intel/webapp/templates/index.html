@@ -313,7 +313,21 @@
             </div>
             <div class="bc-field">
               <label class="bc-label">Client Name</label>
-              <input type="text" class="form-input" id="bc-client-name" placeholder="e.g. BMO Capital Markets, Citadel">
+              <div class="bc-client-lookup-wrap">
+                <input type="text" class="form-input" id="bc-client-name" placeholder="e.g. BMO Capital Markets, Citadel" autocomplete="off">
+                <div class="bc-client-lookup-spinner" id="bc-client-lookup-spinner" style="display:none">
+                  <span class="bc-btn-spinner"></span>
+                </div>
+                <div class="bc-client-lookup-dropdown" id="bc-client-lookup-dropdown" style="display:none"></div>
+              </div>
+              <div class="bc-client-confirmed" id="bc-client-confirmed" style="display:none">
+                <div class="bc-client-confirmed__badge">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.4L8 12.58l7.3-7.3a1 1 0 011.4 0z"/></svg>
+                  <span id="bc-client-confirmed-name"></span>
+                </div>
+                <div class="bc-client-confirmed__detail" id="bc-client-confirmed-detail"></div>
+                <button class="bc-client-confirmed__change" id="bc-client-change-btn" type="button">Change</button>
+              </div>
             </div>
             <div class="bc-field">
               <label class="bc-label">Industry</label>
@@ -501,15 +515,47 @@
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
                 <path d="M11 3h6v6M17 3L9 11M7 5H4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-3"/>
               </svg>
-              Preview HTML
+              Preview
             </button>
-            <button class="btn-settings" id="bc-btn-export-pdf" title="Export as PDF">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
-                <path d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3"/>
-                <path d="M10 3v10m0 0l-3.5-3.5M10 13l3.5-3.5"/>
-              </svg>
-              Export PDF
-            </button>
+            <div class="bc-export-dropdown-wrap">
+              <button class="btn-settings bc-export-trigger" id="bc-export-trigger" title="Export options">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
+                  <path d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3"/>
+                  <path d="M10 3v10m0 0l-3.5-3.5M10 13l3.5-3.5"/>
+                </svg>
+                Export PDF
+                <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12" style="margin-left:2px"><path d="M5.3 7.3a1 1 0 011.4 0L10 10.58l3.3-3.3a1 1 0 111.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.42z"/></svg>
+              </button>
+              <div class="bc-export-dropdown" id="bc-export-dropdown" style="display:none">
+                <button class="bc-export-option" data-mode="client_tearsheet">
+                  <div class="bc-export-option__icon">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M7 6h6M7 10h4"/></svg>
+                  </div>
+                  <div class="bc-export-option__text">
+                    <div class="bc-export-option__title">Client Tear Sheet</div>
+                    <div class="bc-export-option__desc">Pages 1-2 only, safe to share with client</div>
+                  </div>
+                </button>
+                <button class="bc-export-option" data-mode="sales_confidential">
+                  <div class="bc-export-option__icon">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><rect x="3" y="8" width="14" height="10" rx="2"/><path d="M7 8V5a3 3 0 016 0v3"/></svg>
+                  </div>
+                  <div class="bc-export-option__text">
+                    <div class="bc-export-option__title">Sales Confidential</div>
+                    <div class="bc-export-option__desc">Tactical page only — sales rep eyes only</div>
+                  </div>
+                </button>
+                <button class="bc-export-option" data-mode="combined">
+                  <div class="bc-export-option__icon">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><rect x="2" y="2" width="10" height="14" rx="1"/><rect x="8" y="4" width="10" height="14" rx="1"/></svg>
+                  </div>
+                  <div class="bc-export-option__text">
+                    <div class="bc-export-option__title">Combined KX Sheet</div>
+                    <div class="bc-export-option__desc">Full 3-page battle card with logos</div>
+                  </div>
+                </button>
+              </div>
+            </div>
             <div class="bc-report-toolbar__meta" id="bc-report-meta"></div>
           </div>
           <iframe class="bc-report-iframe" id="bc-report-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
