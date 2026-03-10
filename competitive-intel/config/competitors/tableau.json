@@ -1,0 +1,270 @@
+{
+  "name": "Tableau (Salesforce)",
+  "short_name": "tableau",
+  "is_self": false,
+  "description": "Leading data visualization and business intelligence platform, acquired by Salesforce. Competes with KX Dashboards in capital markets analytics and reporting.",
+
+  "sources": {
+    "docs": [
+      {
+        "id": "tableau-help-main",
+        "base_url": "https://help.tableau.com/current/pro/desktop/en-us/default.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 3,
+        "max_pages": 100,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "tableau-server-docs",
+        "base_url": "https://help.tableau.com/current/server/en-us/get_started_server.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 3,
+        "max_pages": 75,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "tableau-developer-docs",
+        "base_url": "https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "max_pages": 50,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "tableau-cloud-docs",
+        "base_url": "https://help.tableau.com/current/online/en-us/to_keep_data_fresh.htm",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "max_pages": 50,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "tableau-pricing",
+        "base_url": "https://www.tableau.com/pricing",
+        "scrape_method": "single_page",
+        "content_selector": "main"
+      },
+      {
+        "id": "tableau-products-overview",
+        "base_url": "https://www.tableau.com/products",
+        "scrape_method": "crawl",
+        "content_selector": "main",
+        "max_depth": 2,
+        "max_pages": 20,
+        "rate_limit_seconds": 0.5
+      },
+      {
+        "id": "tableau-solutions-financial",
+        "base_url": "https://www.tableau.com/solutions/financial-services",
+        "scrape_method": "single_page",
+        "content_selector": "main"
+      }
+    ],
+
+    "blog": {
+      "base_url": "https://www.tableau.com/blog",
+      "scrape_method": "crawl",
+      "content_selector": "article",
+      "max_pages": 40,
+      "rate_limit_seconds": 0.5,
+      "priority_keywords": [
+        "performance", "real-time", "financial services", "capital markets",
+        "analytics", "dashboard", "enterprise", "release", "AI", "pulse",
+        "live connection", "streaming", "embedded analytics"
+      ]
+    },
+
+    "github": {
+      "repos": [
+        {
+          "repo": "tableau/server-client-python",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 100,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 20,
+          "labels_of_interest": ["bug", "enhancement", "feature request"]
+        },
+        {
+          "repo": "tableau/hyper-api-samples",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 50,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 10,
+          "labels_of_interest": ["bug", "enhancement"]
+        },
+        {
+          "repo": "tableau/TabPy",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 75,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 15,
+          "labels_of_interest": ["bug", "enhancement", "feature request"]
+        },
+        {
+          "repo": "tableau/connector-plugin-sdk",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 50,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 10,
+          "labels_of_interest": ["bug", "enhancement"]
+        },
+        {
+          "repo": "tableau/embedding-api-v3-samples",
+          "scrape_issues": true,
+          "scrape_discussions": false,
+          "scrape_releases": true,
+          "max_issues": 25,
+          "issue_sort": "comments",
+          "issue_direction": "desc",
+          "fetch_comments_for_top_n": 5,
+          "labels_of_interest": ["bug", "enhancement"]
+        }
+      ]
+    },
+
+    "community": {
+      "reddit": {
+        "search_terms": [
+          "Tableau",
+          "tableau vs",
+          "tableau problem",
+          "tableau limitation",
+          "tableau performance",
+          "tableau real-time",
+          "tableau financial",
+          "tableau slow",
+          "tableau enterprise",
+          "tableau capital markets"
+        ],
+        "subreddits": ["tableau", "BusinessIntelligence", "dataengineering", "analytics", "algotrading"],
+        "max_results_per_query": 50
+      },
+      "hackernews": {
+        "search_terms": [
+          "Tableau",
+          "tableau"
+        ],
+        "max_results_per_query": 50
+      }
+    },
+
+    "benchmarks": [
+      {
+        "name": "tableau_performance_whitepaper",
+        "url": "https://www.tableau.com/learn/whitepapers/designing-efficient-workbooks",
+        "scrape_method": "single_page"
+      },
+      {
+        "name": "tableau_scalability",
+        "url": "https://help.tableau.com/current/server/en-us/perf_extracts.htm",
+        "scrape_method": "single_page"
+      }
+    ]
+  },
+
+  "topic_keywords": {
+    "performance_query_latency": [
+      "latency", "query time", "response time", "slow dashboard", "render time",
+      "VizQL", "query performance", "extract performance", "live connection speed",
+      "dashboard load time", "query caching"
+    ],
+    "performance_ingestion": [
+      "extract refresh", "data extract", "Hyper", "Hyper engine", "TDE",
+      "incremental refresh", "full refresh", "data freshness", "refresh time",
+      "extract size", "row limit"
+    ],
+    "time_series_analytics": [
+      "time-series", "date calculation", "running total", "moving average",
+      "table calculation", "LOD expression", "DATEPART", "trend line",
+      "forecasting", "temporal", "date filter"
+    ],
+    "sql_query_language": [
+      "calculated field", "LOD expression", "FIXED", "INCLUDE", "EXCLUDE",
+      "table calculation", "custom SQL", "parameter", "set", "level of detail",
+      "Tableau calculation language"
+    ],
+    "high_availability": [
+      "Tableau Server HA", "node", "gateway", "failover", "Active Directory",
+      "disaster recovery", "backup", "site replication", "load balancing",
+      "multi-node", "redundancy"
+    ],
+    "streaming_realtime": [
+      "live connection", "real-time", "streaming", "data freshness",
+      "auto-refresh", "push data", "Tableau Pulse", "embedded analytics",
+      "dashboard refresh"
+    ],
+    "scalability_data_volume": [
+      "scale", "scalability", "extract limit", "row limit", "billion rows",
+      "Hyper engine", "large dataset", "data volume", "enterprise scale",
+      "Server farm", "backgrounder"
+    ],
+    "security_compliance": [
+      "row-level security", "RLS", "authentication", "SSO", "SAML", "OIDC",
+      "data governance", "Tableau Catalog", "lineage", "permission",
+      "content governance", "encryption", "SOC 2"
+    ],
+    "architecture_storage": [
+      "Hyper", "extract", "live connection", "VizQL", "data engine",
+      "in-memory", "columnar", "compression", "Data Management Add-on",
+      "Tableau Prep", "flow"
+    ],
+    "concurrency_multiuser": [
+      "concurrent users", "viewer license", "Creator license", "Explorer license",
+      "session", "backgrounder", "load balancing", "VizQL server process",
+      "capacity"
+    ],
+    "ai_ml_integration": [
+      "TabPy", "R integration", "MATLAB", "Python", "Tableau Pulse",
+      "Ask Data", "natural language", "AI", "Einstein", "predictive",
+      "forecast", "explain data"
+    ],
+    "cloud_deployment": [
+      "Tableau Cloud", "Tableau Online", "Tableau Server", "AWS", "Azure", "GCP",
+      "on-premises", "hybrid", "Salesforce", "managed service"
+    ],
+    "licensing_pricing": [
+      "Creator", "Explorer", "Viewer", "license", "pricing", "cost",
+      "per-user", "subscription", "enterprise", "Salesforce bundle",
+      "TCO", "add-on"
+    ],
+    "ecosystem_integration": [
+      "connector", "ODBC", "JDBC", "REST API", "Embedding API",
+      "Tableau Extensions", "Tableau Bridge", "Salesforce", "Slack",
+      "integration", "SDK", "web data connector"
+    ],
+    "enterprise_support": [
+      "Premium Support", "Salesforce support", "SLA", "dedicated",
+      "professional services", "training", "Tableau Blueprint"
+    ],
+    "developer_experience": [
+      "Tableau Desktop", "Tableau Public", "Tableau Prep", "drag and drop",
+      "learning curve", "community", "Tableau Community", "vizzes",
+      "certification", "training"
+    ],
+    "vendor_maturity": [
+      "Gartner Magic Quadrant", "Leader", "market share", "Salesforce",
+      "enterprise adoption", "Fortune 500", "financial services",
+      "bank", "track record"
+    ],
+    "benchmark_results": [
+      "Hyper benchmark", "extract performance", "dashboard load time",
+      "TPC", "query speed test", "scalability test"
+    ]
+  }
+}
